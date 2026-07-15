@@ -18,6 +18,7 @@ return new class extends Migration
             $table->tinyInteger('deleted')->default(0); // <-- Default 0 (belum dihapus), isi 1 jika dihapus
             $table->timestamps(); // -> otomatis created_at dan updated_at
             $table->softDeletes(); // -> otomatis ada deleted_at
+            $table->unsignedBigInteger('deleted_by')->nullable();
         });
     }
 
