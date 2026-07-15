@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class, // Harus dipanggil pertama!
             UserSeeder::class, // Dipanggil setelah tabel roles terisi
+            ItemSeeder::class, // Dipanggil terakhir
         ]);
     }
 }

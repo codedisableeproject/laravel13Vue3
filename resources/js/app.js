@@ -1,4 +1,5 @@
 import './bootstrap'; // Ini bawaan Laravel (berisi axios)
+import '../css/app.scss'; // Import global SCSS
 
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
@@ -14,9 +15,19 @@ import '@mdi/font/css/materialdesignicons.css';
 // Setup Pinia
 import { createPinia } from 'pinia';
 
+// Setup Icons
+import { aliases, mdi } from 'vuetify/iconsets/mdi'
+
 const vuetify = createVuetify({
     components,
     directives,
+    icons: {
+        defaultSet: 'mdi',
+        aliases,
+        sets: {
+            mdi,
+        },
+    },
 });
 
 const pinia = createPinia();

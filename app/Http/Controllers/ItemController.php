@@ -1,0 +1,89 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use App\Models\Item;
+use Illuminate\Support\Facades\Storage;
+
+class ItemController extends Controller
+{
+    public function index()
+    {
+        $items = Item::where('deleted', 0)->paginate(10);
+        return Inertia::render('Item/Index', compact('items'));
+    }
+
+    public function create()
+    {
+        $kodeItem = 'ITM-' . date('Ymd') . '-' . str_pad(Item::count() + 1, 4, '0', STR_PAD_LEFT);
+        return Inertia::render('Item/Create', compact('kodeItem'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'kode' => 'required|unique:items',
+            'nama' => 'required|string|max:255',
+            'harga' => 'required|numeric|min:0',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('items', 'public');
+        }
+
+        Item::create([
+            'kode' => $request->kode,
+            'nama' => $request->nama,
+            'harga' => $request->harga,
+            'image' => $imagePath,
+            'deleted' => 0
+        ]);
+
+        return redirect()->route('item.index')->with('success', 'Item berhasil dibuat!');
+    }
+
+    public function edit($id)
+    {
+        $item = Item::findOrFail($id);
+        return Inertia::render('Item/Edit', compact('item'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $item = Item::findOrFail($id);
+        $request->validate([
+            'kode' => 'required|unique:items,kode,' . $id,
+            'nama' => 'required|string|max:255',
+            'harga' => 'required|numeric|min:0',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        $imagePath = $item->image;
+        if ($request->hasFile('image')) {
+            if ($item->image) {
+                Storage::disk('public')->delete($item->image);
+            }
+            $imagePath = $request->file('image')->store('items', 'public');
+        }
+
+        $item->update([
+            'kode' => $request->kode,
+            'nama' => $request->nama,
+            'harga' => $request->harga,
+            'image' => $imagePath
+        ]);
+        return redirect()->route('item.index')->with('success', 'Item berhasil diupdate!');
+    }
+
+    public function destroy($id)
+    {
+        $item = Item::findOrFail($id);
+        $item->update(['deleted' => 1]);
+        $item->delete();
+        return redirect()->route('item.index')->with('success', 'Item berhasil dihapus!');
+    }
+}

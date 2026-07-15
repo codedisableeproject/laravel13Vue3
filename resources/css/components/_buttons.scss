@@ -1,0 +1,66 @@
+@use '../variables' as *;
+
+.date-trigger {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid $border-light;
+  background: $bg-light;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: #C7D2FE;
+    background: #ffffff;
+  }
+}
+
+.quick-chip {
+  cursor: pointer;
+  background: $bg-soft !important;
+  color: $text-gray;
+  font-weight: 500;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #E0E7FF !important;
+    color: #4338CA;
+  }
+
+  &-active { // Berkat nesting SCSS, ini akan ter-compile menjadi .quick-chip-active
+    background: #4F46E5 !important;
+    color: #ffffff !important;
+  }
+}
+
+.apply-btn {
+  display: inline-flex;
+  padding: 0 12px;
+  align-items: center;
+  justify-content: center;
+  background-color: $primary-color !important; 
+  color: #ffffff !important; 
+  height: 44px !important; // Disatukan di sini agar rapi
+  border-radius: 10px;
+  text-transform: none;
+  font-weight: 600;
+}
+
+// Tambahan untuk tombol ikon bundar kecil di tabel aksi (jika Anda pakai)
+.action-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid $border-light;
+  background: #ffffff;
+  transition: all 0.15s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    background: $bg-light;
+  }
+}

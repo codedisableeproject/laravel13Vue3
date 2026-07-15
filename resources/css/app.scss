@@ -1,0 +1,94 @@
+// 1. DAFTAR @USE WAJIB DI ATAS (Sesuai Aturan Sass)
+@use 'tailwindcss/base';
+@use 'tailwindcss/components';
+@use 'tailwindcss/utilities';
+
+@use 'variables' as *;
+@use 'components/cards' as *; 
+@use 'components/buttons' as *; 
+
+// 2. KODE CSS BIASA TARUH DI BAWAH SINI
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+}
+
+.stat-glow {
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  filter: blur(4px);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.empty-state {
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+// --- TAMBAHAN BARU: MODERNISASI TABEL KUSTOM (Taruh di sini) ---
+// Di file app.scss (Ganti bagian .custom-table lawas dengan ini)
+.custom-table {
+  background: transparent !important;
+  box-shadow: none !important;
+
+  // --- KUNCI UTAMA BORDER RADIUS TABEL ---
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  border-radius: 12px !important; // Atur tingkat kelengkungan sudut di sini
+  overflow: hidden !important;
+  border: 1px solid #e2e8f0 !important; // Opsional: Beri border luar tipis agar lengkungannya terlihat jelas
+
+  thead tr {
+    background-color: #f8fafc !important;
+  }
+
+  // Tembak langsung selector internal header bawaan Vuetify
+  .v-data-table-header__content {
+    font-weight: 700 !important; 
+    color: #1e293b !important;
+    letter-spacing: 0.04em;
+  }
+
+  th {
+    font-size: 0.75rem !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 14px 16px !important;
+  }
+
+  tbody tr {
+    transition: background-color 0.15s ease;
+    
+    &:hover {
+      background-color: #f8fafc !important;
+    }
+
+    td {
+      padding: 14px 16px !important;
+      border-bottom: 1px solid #f1f5f9 !important;
+    }
+  }
+}

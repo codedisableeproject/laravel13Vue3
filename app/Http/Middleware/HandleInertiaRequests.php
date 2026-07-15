@@ -57,27 +57,31 @@ class HandleInertiaRequests extends Middleware
                     'icon'  => 'mdi-view-dashboard',
                 ],
                 [
-                    'title' => 'Profil Saya',
-                    'url'   => '/profile',
-                    'icon'  => 'mdi-account',
+                    'title' => 'Penjualan',
+                    'url'   => '/penjualan',
+                    'icon'  => 'mdi-cash-register',
                 ],
                 [
-                    'title' => 'About',
-                    'url'   => '/about',
-                    'icon'  => 'mdi-information',
+                    'title' => 'Pembayaran',
+                    'url'   => '/pembayaran',
+                    'icon'  => 'mdi-credit-card',
                 ],
-                // TAMBAHKAN INI UNTUK TES:
                 [
-                    'title' => 'Google Search',
-                    'url'   => 'https://google.com',
-                    'icon'  => 'mdi-google',
-                ],
-                // Jika nanti ada halaman baru, cukup tambah di sini!
-                // [
-                //     'title' => 'Data Barang',
-                //     'url'   => '/barang',
-                //     'icon'  => 'mdi-package-variant',
-                // ],
+                    'title' => 'Master',
+                    'icon'  => 'mdi-folder-multiple',
+                    'children' => [
+                        [
+                            'title' => 'User',
+                            'url'   => '/master/user',
+                            'icon'  => 'mdi-account-group',
+                        ],
+                        [
+                            'title' => 'Item',
+                            'url'   => '/master/item',
+                            'icon'  => 'mdi-package-variant',
+                        ]
+                    ]
+                ]
             ],
         ]);
         
