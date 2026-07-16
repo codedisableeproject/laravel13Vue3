@@ -3,18 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Penjualan extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = [
         'kode_penjualan',
         'tanggal_penjualan',
         'total',
         'status',
         'deleted',
+        'deleted_at',
         'deleted_by'
     ];
 
@@ -34,6 +32,6 @@ class Penjualan extends Model
 
     public function totalSudahDibayar()
     {
-        return $this->pembayarans()->sum('nilai_bayar');
+        return $this->pembayarans()->where('deleted', 0)->sum('nilai_bayar');
     }
 }

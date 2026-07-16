@@ -68,8 +68,11 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-        $user->update(['deleted' => 1]);
-        $user->delete();
+        $user->update([
+            'deleted' => 1,
+            'deleted_at' => now(),
+            'deleted_by' => auth()->id()
+        ]);
         return redirect()->route('user.index')->with('success', 'User berhasil dihapus!');
     }
 }

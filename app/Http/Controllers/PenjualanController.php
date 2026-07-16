@@ -14,7 +14,7 @@ class PenjualanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Penjualan::with('items.item', 'pembayarans')->orderBy('created_at', 'desc');
+        $query = Penjualan::with('items.item', 'pembayarans')->where('deleted', 0)->orderBy('created_at', 'desc');
 
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('tanggal_penjualan', [$request->start_date, $request->end_date]);
@@ -22,7 +22,7 @@ class PenjualanController extends Controller
 
         $penjualans = $query->paginate(10);
         $items = Item::where('deleted', 0)->get();
-        $kodePenjualan = 'PJN-' . date('Ymd') . '-' . str_pad(Penjualan::count() + 1, 4, '0', STR_PAD_LEFT);
+        $kodePenjualan = 'PJN-' . date('Ymd') . '-' . str_pad(Penjualan::where('deleted', 0)->count() + 1, 4, '0', STR_PAD_LEFT);
         
         $filters = [
             'start_date' => $request->start_date,
@@ -80,14 +80,14 @@ class PenjualanController extends Controller
 
     public function show($id)
     {
-        $penjualan = Penjualan::with('items.item', 'pembayarans')->findOrFail($id);
+        $penjualan = Penjualan::with('items.item', 'pembayarans')->where('deleted', 0)->findOrFail($id);
         $totalSudahDibayar = $penjualan->totalSudahDibayar();
         return Inertia::render('Penjualan/Show', compact('penjualan', 'totalSudahDibayar'));
     }
 
     public function edit($id)
     {
-        $penjualan = Penjualan::with('items.item')->findOrFail($id);
+        $penjualan = Penjualan::with('items.item')->where('deleted', 0)->findOrFail($id);
         if ($penjualan->status === 'Sudah Dibayar') {
             return redirect()->route('penjualan.index')->with('error', 'Penjualan yang sudah dibayar tidak bisa diedit!');
         }
@@ -97,7 +97,7 @@ class PenjualanController extends Controller
 
     public function update(Request $request, $id)
     {
-        $penjualan = Penjualan::findOrFail($id);
+        $penjualan = Penjualan::where('deleted', 0)->findOrFail($id);
         if ($penjualan->status === 'Sudah Dibayar') {
             return redirect()->route('penjualan.index')->with('error', 'Penjualan yang sudah dibayar tidak bisa diedit!');
         }
@@ -140,13 +140,16 @@ class PenjualanController extends Controller
 
     public function destroy($id)
     {
-        $penjualan = Penjualan::findOrFail($id);
+        $penjualan = Penjualan::where('deleted', 0)->findOrFail($id);
         if ($penjualan->status === 'Sudah Dibayar') {
             return redirect()->route('penjualan.index')->with('error', 'Penjualan yang sudah dibayar tidak bisa dihapus!');
         }
 
-        $penjualan->update(['deleted' => 1]);
-        $penjualan->delete();
+        $penjualan->update([
+            'deleted' => 1,
+            'deleted_at' => now(),
+            'deleted_by' => auth()->id()
+        ]);
         return redirect()->route('penjualan.index')->with('success', 'Penjualan berhasil dihapus!');
     }
 }

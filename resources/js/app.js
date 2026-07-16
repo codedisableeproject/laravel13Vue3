@@ -15,6 +15,9 @@ import '@mdi/font/css/materialdesignicons.css';
 // Setup Pinia
 import { createPinia } from 'pinia';
 
+// Setup Global Usage
+import registerGlobalUsage from './useGlobal';
+
 // Setup Icons
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
@@ -36,11 +39,14 @@ createInertiaApp({
     // Mengatur direktori halaman ke resources/js/Pages
     resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
+        const app = createApp({ render: () => h(App, props) })
             .use(plugin) // Gunakan Inertia
             .use(pinia)  // Gunakan Pinia
-            .use(vuetify) // Gunakan Vuetify
-            .mount(el);
+            .use(vuetify); // Gunakan Vuetify
+        
+        registerGlobalUsage(app);
+        
+        app.mount(el);
     },
 
     progress: {

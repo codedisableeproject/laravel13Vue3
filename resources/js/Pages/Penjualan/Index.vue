@@ -18,13 +18,13 @@
         <v-col cols="12" md="4">
           <v-menu v-model="startMenu" :close-on-content-click="false">
             <template v-slot:activator="{ props }">
-              <button v-bind="props" class="date-trigger">
+              <v-btn v-bind="props" class="date-trigger">
                 <v-icon size="18" class="mr-2 text-indigo-500" icon="mdi-calendar-start" />
                 <div class="text-left">
                   <div class="text-[11px] uppercase tracking-wide text-gray-400 leading-none mb-1">Dari Tanggal</div>
                   <div class="text-sm font-medium text-gray-800">{{ formatDate(startDate) || 'Pilih Tanggal' }}</div>
                 </div>
-              </button>
+              </v-btn>
             </template>
             <v-date-picker v-model="startDate" @update:model-value="startMenu = false" />
           </v-menu>
@@ -33,13 +33,13 @@
         <v-col cols="12" md="4">
           <v-menu v-model="endMenu" :close-on-content-click="false">
             <template v-slot:activator="{ props }">
-              <button v-bind="props" class="date-trigger">
+              <v-btn v-bind="props" class="date-trigger">
                 <v-icon size="18" class="mr-2 text-indigo-500" icon="mdi-calendar-end" />
                 <div class="text-left">
                   <div class="text-[11px] uppercase tracking-wide text-gray-400 leading-none mb-1">Sampai Tanggal</div>
                   <div class="text-sm font-medium text-gray-800">{{ formatDate(endDate) || 'Pilih Tanggal' }}</div>
                 </div>
-              </button>
+              </v-btn>
             </template>
             <v-date-picker v-model="endDate" @update:model-value="endMenu = false" />
           </v-menu>
@@ -62,7 +62,7 @@
 
     <!-- MAIN TABLE SECTION (Menggunakan style card premium) -->
     <div class="card mb-6 overflow-hidden">
-      <!-- Table Header & Action Button -->
+      <!-- Table Header & Action v-btn -->
       <div class="p-5 flex justify-between items-center border-b border-gray-100 bg-slate-50/50">
         <div>
           <h3 class="font-bold text-gray-800 text-lg">Data Transaksi</h3>
@@ -126,32 +126,32 @@
             </span>
           </template>
 
-          <!-- Column: Aksi (Menggunakan Button Ikon Lingkaran Tipis Premium) -->
+          <!-- Column: Aksi (Menggunakan v-btn Ikon Lingkaran Tipis Premium) -->
           <template v-slot:item.actions="{ item }">
             <div class="flex items-center justify-end gap-1.5">
-              <button
+              <v-btn
                 class="action-icon-btn text-indigo-600 hover:bg-indigo-50"
                 title="Lihat Detail"
                 @click="openShowDialog(item)"
               >
                 <v-icon size="16" icon="mdi-eye" />
-              </button>
-              <button
+              </v-btn>
+              <v-btn
                 v-if="item.status !== 'Sudah Dibayar'"
                 class="action-icon-btn text-amber-600 hover:bg-amber-50"
                 title="Edit"
                 @click="openEditDialog(item)"
               >
                 <v-icon size="16" icon="mdi-pencil" />
-              </button>
-              <button
+              </v-btn>
+              <v-btn
                 v-if="item.status !== 'Sudah Dibayar'"
                 class="action-icon-btn text-rose-600 hover:bg-rose-50"
                 title="Hapus"
                 @click="deletePenjualan(item.id)"
               >
                 <v-icon size="16" icon="mdi-delete" />
-              </button>
+              </v-btn>
             </div>
           </template>
         </v-data-table>
@@ -195,7 +195,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, getCurrentInstance } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import DialogCreate from './DialogCreate.vue'
@@ -208,6 +208,9 @@ const props = defineProps({
   kodePenjualan: String,
   filters: Object
 })
+
+const { proxy } = getCurrentInstance()
+const $dialogNotif = proxy.$dialogNotif
 
 const headers = [
   { title: 'KODE PENJUALAN', key: 'kode_penjualan', sortable: true },
@@ -258,10 +261,17 @@ const applyFilters = () => {
   })
 }
 
-const deletePenjualan = (id) => {
-  if (confirm('Apakah Anda yakin ingin menghapus data penjualan ini?')) {
-    router.delete(`/penjualan/${id}`)
-  }
+const deletePenjualan = async (id) => {
+  const confirm = await $dialogNotif.confirm({
+    title: 'Hapus Penjualan',
+    text: 'Apakah Anda yakin ingin menghapus data penjualan ini?',
+    icon: 'info',
+    textConfirm: 'Hapus',
+    colorConfirm: 'danger', 
+  })
+  if (!confirm.confirmed) return
+  
+  router.delete(`/penjualan/${id}`)
 }
 
 const openShowDialog = (penjualan) => {

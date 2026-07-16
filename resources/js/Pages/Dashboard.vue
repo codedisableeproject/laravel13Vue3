@@ -20,13 +20,13 @@
         <v-col cols="12" md="3">
           <v-menu v-model="startMenu" :close-on-content-click="false">
             <template v-slot:activator="{ props }">
-              <button v-bind="props" class="date-trigger">
+              <v-btn v-bind="props" class="date-trigger">
                 <v-icon size="18" class="mr-2 text-indigo-500" icon="mdi-calendar-start" />
                 <div class="text-left">
                   <div class="text-[11px] uppercase tracking-wide text-gray-400 leading-none mb-1">Dari</div>
                   <div class="text-sm font-medium text-gray-800">{{ startDate }}</div>
                 </div>
-              </button>
+              </v-btn>
             </template>
             <v-date-picker v-model="startDate" @update:model-value="startMenu = false" />
           </v-menu>
@@ -35,13 +35,13 @@
         <v-col cols="12" md="3">
           <v-menu v-model="endMenu" :close-on-content-click="false">
             <template v-slot:activator="{ props }">
-              <button v-bind="props" class="date-trigger">
+              <v-btn v-bind="props" class="date-trigger">
                 <v-icon size="18" class="mr-2 text-indigo-500" icon="mdi-calendar-end" />
                 <div class="text-left">
                   <div class="text-[11px] uppercase tracking-wide text-gray-400 leading-none mb-1">Sampai</div>
                   <div class="text-sm font-medium text-gray-800">{{ endDate }}</div>
                 </div>
-              </button>
+              </v-btn>
             </template>
             <v-date-picker v-model="endDate" @update:model-value="endMenu = false" />
           </v-menu>

@@ -1,20 +1,33 @@
 <template>
   <AppLayout>
-    <v-card class="mb-6">
-      <v-card-title class="flex justify-between items-center">
-        <h2 class="text-xl font-bold">Daftar Item</h2>
-        <Link href="/master/item/create">
-          <v-btn color="primary">
-            <v-icon left>mdi-plus</v-icon>
-            Tambah Item
-          </v-btn>
-        </Link>
-      </v-card-title>
-      <v-card-text>
+    <template #header>
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">Daftar Item</h1>
+        </div>
+      </div>
+    </template>
+
+    <div class="card mb-6 overflow-hidden">
+      <div class="p-5 flex justify-between items-center border-b border-gray-100 bg-slate-50/50">
+        <h3 class="font-bold text-gray-800 text-lg">Data Item</h3>
+        <v-btn
+          color="primary"
+          class="apply-btn !h-10 text-sm"
+          elevation="0"
+          @click="createDialogOpen = true"
+        >
+          <v-icon left size="18" class="mr-1" icon="mdi-plus" />
+          Tambah Item
+        </v-btn>
+      </div>
+
+      <div class="px-5 py-5">
         <v-data-table
           :headers="headers"
           :items="items.data"
-          class="elevation-1"
+          class="custom-table"
+          hide-default-footer
         >
           <template v-slot:item.image="{ item }">
             <v-img
@@ -30,52 +43,90 @@
             Rp {{ formatNumber(item.harga) }}
           </template>
           <template v-slot:item.actions="{ item }">
-            <Link :href="`/master/item/${item.id}/edit`">
-              <v-btn size="small" variant="outlined" color="warning" class="mr-2">
-                Edit
+            <div class="flex items-center justify-end gap-1.5">
+              <v-btn
+                class="action-icon-btn text-indigo-600 hover:bg-indigo-50"
+                title="Lihat Detail"
+                @click="openShowDialog(item)"
+              >
+                <v-icon size="16" icon="mdi-eye" />
               </v-btn>
-            </Link>
-            <v-btn
-              size="small"
-              variant="outlined"
-              color="error"
-              @click="deleteItem(item.id)"
-            >
-              Hapus
-            </v-btn>
+              <v-btn
+                class="action-icon-btn text-amber-600 hover:bg-amber-50"
+                title="Edit"
+                @click="openEditDialog(item)"
+              >
+                <v-icon size="16" icon="mdi-pencil" />
+              </v-btn>
+              <v-btn
+                class="action-icon-btn text-rose-600 hover:bg-rose-50"
+                title="Hapus"
+                @click="deleteItem(item.id)"
+              >
+                <v-icon size="16" icon="mdi-delete" />
+              </v-btn>
+            </div>
           </template>
         </v-data-table>
-        
-        <div class="mt-4">
+
+        <div class="mt-4 flex justify-end">
           <v-pagination
             v-model="currentPage"
             :length="items.last_page"
+            total-visible="5"
+            density="comfortable"
+            active-color="primary"
+            variant="flat"
             @update:model-value="changePage"
           />
         </div>
-      </v-card-text>
-    </v-card>
+      </div>
+    </div>
+
+    <DialogCreate
+      v-model="createDialogOpen"
+      :kode-item="kodeItem"
+    />
+    <DialogShow
+      v-model="showDialogOpen"
+      :item="selectedItem"
+    />
+    <DialogEdit
+      v-model="editDialogOpen"
+      :item="selectedItem"
+    />
   </AppLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { ref, getCurrentInstance } from 'vue'
+import { router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import DialogCreate from './DialogCreate.vue'
+import DialogShow from './DialogShow.vue'
+import DialogEdit from './DialogEdit.vue'
 
 const props = defineProps({
-  items: Object
+  items: Object,
+  kodeItem: String
 })
 
+const { proxy } = getCurrentInstance()
+const $dialogNotif = proxy.$dialogNotif
+
 const headers = [
-  { title: 'Kode', key: 'kode' },
-  { title: 'Nama', key: 'nama' },
+  { title: 'Kode', key: 'kode', sortable: true },
+  { title: 'Nama', key: 'nama', sortable: true },
   { title: 'Image', key: 'image' },
-  { title: 'Harga', key: 'harga' },
-  { title: 'Aksi', key: 'actions', sortable: false }
+  { title: 'Harga', key: 'harga', sortable: true },
+  { title: 'Aksi', key: 'actions', sortable: false, align: 'end' }
 ]
 
 const currentPage = ref(props.items.current_page)
+const createDialogOpen = ref(false)
+const showDialogOpen = ref(false)
+const editDialogOpen = ref(false)
+const selectedItem = ref(null)
 
 const formatNumber = (num) => {
   return new Intl.NumberFormat('id-ID').format(num || 0)
@@ -85,9 +136,26 @@ const changePage = (page) => {
   router.visit(`/master/item?page=${page}`)
 }
 
-const deleteItem = (id) => {
-  if (confirm('Yakin ingin menghapus?')) {
-    router.delete(`/master/item/${id}`)
-  }
+const deleteItem = async (id) => {
+  const confirm = await $dialogNotif.confirm({
+    title: 'Hapus Item',
+    text: 'Apakah Anda yakin ingin menghapus data item ini?',
+    icon: 'info',
+    textConfirm: 'Hapus',
+    colorConfirm: 'danger', 
+  })
+  if (!confirm.confirmed) return
+  
+  router.delete(`/master/item/${id}`)
+}
+
+const openShowDialog = (item) => {
+  selectedItem.value = item
+  showDialogOpen.value = true
+}
+
+const openEditDialog = (item) => {
+  selectedItem.value = item
+  editDialogOpen.value = true
 }
 </script>

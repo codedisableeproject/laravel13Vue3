@@ -3,18 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = [
         'kode',
         'nama',
         'image',
         'harga',
         'deleted',
+        'deleted_at',
         'deleted_by'
     ];
 

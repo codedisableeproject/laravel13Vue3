@@ -12,20 +12,30 @@ class PembayaranController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pembayaran::with('penjualan')->orderBy('created_at', 'desc');
+        $query = Pembayaran::with(['penjualan' => function($q) {
+            $q->with(['pembayarans' => function($qq) {
+                $qq->where('deleted', 0);
+            }])->where('deleted', 0);
+        }])->where('deleted', 0)->orderBy('created_at', 'desc');
 
         if ($request->tanggal_mulai && $request->tanggal_selesai) {
             $query->whereBetween('tanggal_pembayaran', [$request->tanggal_mulai, $request->tanggal_selesai]);
         }
 
         $pembayarans = $query->paginate(10);
-        return Inertia::render('Pembayaran/Index', compact('pembayarans'));
+        $penjualans = Penjualan::with(['pembayarans' => function($q) {
+            $q->where('deleted', 0);
+        }])->where('deleted', 0)->where('status', '!=', 'Sudah Dibayar')->get();
+        $kodePembayaran = 'PMB-' . date('Ymd') . '-' . str_pad(Pembayaran::where('deleted', 0)->count() + 1, 4, '0', STR_PAD_LEFT);
+        return Inertia::render('Pembayaran/Index', compact('pembayarans', 'penjualans', 'kodePembayaran'));
     }
 
     public function create()
     {
-        $penjualans = Penjualan::where('status', '!=', 'Sudah Dibayar')->get();
-        $kodePembayaran = 'PMB-' . date('Ymd') . '-' . str_pad(Pembayaran::count() + 1, 4, '0', STR_PAD_LEFT);
+        $penjualans = Penjualan::with(['pembayarans' => function($q) {
+            $q->where('deleted', 0);
+        }])->where('deleted', 0)->where('status', '!=', 'Sudah Dibayar')->get();
+        $kodePembayaran = 'PMB-' . date('Ymd') . '-' . str_pad(Pembayaran::where('deleted', 0)->count() + 1, 4, '0', STR_PAD_LEFT);
         return Inertia::render('Pembayaran/Create', compact('penjualans', 'kodePembayaran'));
     }
 

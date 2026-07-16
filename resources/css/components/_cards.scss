@@ -1,21 +1,26 @@
 @use '../variables' as *; // Pastikan path ke variables sudah benar dari posisi subfolder components
 
-// --- 1. CLASS CARD GLOBAL (Base) ---
-.card {
+// --- 1. MIXIN CARD GLOBAL (Base) ---
+@mixin card-base {
   border-radius: 16px;
   background: #ffffff;
   border: 1px solid $border-color;
   box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04); // Shadow super tipis dan bersih
 }
 
-// --- 2. VARIAN CARD TURUNAN ---
+// --- 2. CLASS CARD GLOBAL (Base) ---
+.card {
+  @include card-base;
+}
+
+// --- 3. VARIAN CARD TURUNAN ---
 .filter-card {
-  @extend .card;
+  @include card-base;
   padding: 12px;
 }
 
 .stat-card {
-  @extend .card;
+  @include card-base;
   position: relative;
   padding: 20px;
   overflow: hidden;
@@ -28,7 +33,7 @@
 }
 
 .chart-card {
-  @extend .card;
+  @include card-base;
   padding: 20px;
   min-height: 400px;
   transition: box-shadow 0.2s ease;

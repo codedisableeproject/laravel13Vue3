@@ -34,13 +34,13 @@
             <v-col cols="12" md="6" class="py-1">
               <v-menu v-model="dateMenu" :close-on-content-click="false">
                 <template v-slot:activator="{ props }">
-                  <button type="button" v-bind="props" class="date-trigger h-[50px] !border-gray-200">
+                  <v-btn type="button" v-bind="props" class="date-trigger h-[50px] !border-gray-200">
                     <v-icon size="18" class="mr-3 text-indigo-500" icon="mdi-calendar" />
                     <div class="text-left">
                       <div class="text-[10px] uppercase tracking-wide text-gray-400 leading-none mb-0.5">Tanggal Penjualan</div>
                       <div class="text-sm font-semibold text-gray-800">{{ form.tanggal_penjualan || 'Pilih Tanggal' }}</div>
                     </div>
-                  </button>
+                  </v-btn>
                 </template>
                 <v-date-picker v-model="form.tanggal_penjualan" @update:model-value="dateMenu = false" />
               </v-menu>
@@ -127,7 +127,7 @@
                   </v-col>
 
                   <v-col cols="12" md="1" class="pa-1 flex justify-end">
-                    <button
+                    <v-btn
                       type="button"
                       class="action-icon-btn text-rose-600 hover:bg-rose-50 border-rose-100 disabled:opacity-30 disabled:pointer-events-none"
                       title="Hapus Baris"
@@ -135,7 +135,7 @@
                       @click="removeItem(index)"
                     >
                       <v-icon size="16" icon="mdi-delete" />
-                    </button>
+                    </v-btn>
                   </v-col>
                 </v-row>
               </div>
@@ -153,10 +153,10 @@
             <v-btn variant="text" class="!text-gray-500 rounded-xl px-5" height="44" @click="$emit('update:modelValue', false)">
               Batal
             </v-btn>
-            <button type="submit" class="apply-btn min-w-[140px]">
+            <v-btn type="submit" class="apply-btn min-w-[140px]">
               <v-icon left size="18" class="mr-1" icon="mdi-content-save-outline" />
               Simpan Perubahan
-            </button>
+            </v-btn>
           </div>
         </v-form>
       </v-card-text>

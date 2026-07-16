@@ -12,12 +12,13 @@ class ItemController extends Controller
     public function index()
     {
         $items = Item::where('deleted', 0)->paginate(10);
-        return Inertia::render('Item/Index', compact('items'));
+        $kodeItem = 'ITM-' . date('Ymd') . '-' . str_pad(Item::where('deleted', 0)->count() + 1, 4, '0', STR_PAD_LEFT);
+        return Inertia::render('Item/Index', compact('items', 'kodeItem'));
     }
 
     public function create()
     {
-        $kodeItem = 'ITM-' . date('Ymd') . '-' . str_pad(Item::count() + 1, 4, '0', STR_PAD_LEFT);
+        $kodeItem = 'ITM-' . date('Ymd') . '-' . str_pad(Item::where('deleted', 0)->count() + 1, 4, '0', STR_PAD_LEFT);
         return Inertia::render('Item/Create', compact('kodeItem'));
     }
 
@@ -27,7 +28,7 @@ class ItemController extends Controller
             'kode' => 'required|unique:items',
             'nama' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|max:10240',
         ]);
 
         $imagePath = null;
@@ -48,18 +49,18 @@ class ItemController extends Controller
 
     public function edit($id)
     {
-        $item = Item::findOrFail($id);
+        $item = Item::where('deleted', 0)->findOrFail($id);
         return Inertia::render('Item/Edit', compact('item'));
     }
 
     public function update(Request $request, $id)
     {
-        $item = Item::findOrFail($id);
+        $item = Item::where('deleted', 0)->findOrFail($id);
         $request->validate([
             'kode' => 'required|unique:items,kode,' . $id,
             'nama' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|max:10240',
         ]);
 
         $imagePath = $item->image;
@@ -81,9 +82,12 @@ class ItemController extends Controller
 
     public function destroy($id)
     {
-        $item = Item::findOrFail($id);
-        $item->update(['deleted' => 1]);
-        $item->delete();
+        $item = Item::where('deleted', 0)->findOrFail($id);
+        $item->update([
+            'deleted' => 1,
+            'deleted_at' => now(),
+            'deleted_by' => auth()->id()
+        ]);
         return redirect()->route('item.index')->with('success', 'Item berhasil dihapus!');
     }
 }
