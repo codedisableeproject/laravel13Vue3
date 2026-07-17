@@ -83,6 +83,11 @@ class HandleInertiaRequests extends Middleware
                     ]
                 ]
             ],
+        // sFlash message (buat notif sukses/error)
+        'flash' => [
+            'success' => fn () => $request->session()->get('success'),
+            'error'   => fn () => $request->session()->get('error'),
+        ],
         ]);
         
     }

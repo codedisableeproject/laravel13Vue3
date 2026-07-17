@@ -44,7 +44,7 @@
             />
           </v-menu>
         </v-col>
-        <v-col cols="12" md="3">
+        <v-col cols="12" md="4">
           <v-menu v-model="endMenu">
             <template v-slot:activator="{ props }">
               <v-btn v-bind="props" class="date-trigger">
@@ -65,7 +65,8 @@
         <v-col cols="12" md="4">
           <v-btn 
             block 
-            color="primary" 
+            color="primary"
+            class="apply-btn"
             :loading="isFiltering"
             @click="applyFilters"
           >
