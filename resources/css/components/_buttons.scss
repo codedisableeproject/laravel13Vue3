@@ -56,11 +56,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  min-width: 32px;
   height: 32px;
-  border-radius: 10%;
+  padding: 0 8px;
+  border-radius: 5px;
   border: 1px solid;
   background: #ffffff;
+  gap: 4px;
   transition: all 0.15s ease;
 
   &:hover {

@@ -69,6 +69,12 @@ class ItemController extends Controller
                 Storage::disk('public')->delete($item->image);
             }
             $imagePath = $request->file('image')->store('items', 'public');
+        } elseif ($request->boolean('remove_image')) {
+            // user minta hapus gambar tanpa ganti yang baru
+            if ($item->image) {
+                Storage::disk('public')->delete($item->image);
+            }
+            $imagePath = null;
         }
 
         $item->update([

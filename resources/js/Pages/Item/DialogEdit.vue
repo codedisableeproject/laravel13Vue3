@@ -73,6 +73,21 @@
                   max-height="100"
                   class="mt-2"
                 />
+                <v-row v-if="currentImage" justify="end" class="mt-2 mx-0">
+                  <v-btn
+                    class="action-icon-btn text-rose-600 hover:bg-rose-50"
+                    title="Hapus"
+                    @click="removeCurrentImage"
+                  >
+                    Hapus Gambar
+                  </v-btn>
+                </v-row>
+              </v-col>
+              <v-col cols="12" md="12" v-if="removeImage">
+                <v-alert type="warning" density="compact" variant="tonal">
+                  Gambar akan dihapus setelah disimpan.
+                  <v-btn size="small" variant="text" @click="undoRemoveImage">Batalkan</v-btn>
+                </v-alert>
               </v-col>
             </v-row>
           </div>
@@ -81,7 +96,11 @@
             <v-btn variant="text" class="!text-gray-500 rounded-xl px-5" height="44" @click="$emit('update:modelValue', false)">
               Batal
             </v-btn>
-            <v-btn type="submit" class="apply-btn min-w-[140px]">
+            <v-btn 
+              :loading="isLoading.save"
+              type="submit" 
+              class="apply-btn min-w-[140px]"
+            >
               <v-icon left size="18" class="mr-1" icon="mdi-content-save-outline" />
               Simpan Perubahan
             </v-btn>
@@ -111,6 +130,8 @@ const form = ref({
 })
 
 const currentImage = ref('')
+const removeImage = ref(false)
+const originalImage = ref('')
 const isLoading = ref({
   save: false,
   load: false
@@ -125,8 +146,21 @@ watch(() => props.modelValue, (newValue) => {
       image: null
     }
     currentImage.value = props.item.image
+    originalImage.value = props.item.image // simpan cadangan tiap modal dibuka
+    removeImage.value = false
   }
 })
+
+const removeCurrentImage = () => {
+  removeImage.value = true
+  form.value.image = null
+  currentImage.value = ''
+}
+
+const undoRemoveImage = () => {
+  removeImage.value = false
+  currentImage.value = originalImage.value
+}
 
 const dialogModel = computed({
   get: () => props.modelValue,
@@ -141,21 +175,25 @@ const submitForm = () => {
   data.append('nama', form.value.nama)
   data.append('harga', form.value.harga)
   data.append('_method', 'PUT')
-  
+
   if (form.value.image) {
     data.append('image', form.value.image)
   }
-  
+
+  if (removeImage.value) {
+    data.append('remove_image', '1')
+  }
+
   router.post(`/master/item/${props.item.id}`, data, {
     preserveScroll: true,
-    // Bertindak seperti 'catch' untuk menangkap error validasi dari Laravel
+    onSuccess: () => {
+      emit('update:modelValue', false)
+    },
     onError: (errors) => {
       console.log('Validasi gagal:', errors)
     },
-    // Bertindak seperti 'finally', selalu jalan baik sukses maupun error
     onFinish: () => {
       isLoading.value.save = false
-      emit('update:modelValue', false)
     }
   })
 }

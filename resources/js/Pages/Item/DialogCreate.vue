@@ -11,7 +11,7 @@
           <div>
             <h2 class="text-xl font-bold">Tambah Item</h2>
           </div>
-          <v-btn icon color="white" @click="$emit('update:modelValue', false)" class="rounded-full">
+          <v-btn icon color="white" :disabled="isLoading" @click="$emit('update:modelValue', false)" class="rounded-full">
             <v-icon size="24" color="black" icon="mdi-close" />
           </v-btn>
         </div>
@@ -64,16 +64,37 @@
                   show-size
                   variant="outlined"
                   density="comfortable"
+                  @update:model-value="handleImageChange"
+                />
+              </v-col>
+              
+              <!-- SECTION PREVIEW GAMBAR BARU -->
+              <v-col cols="12" md="12" v-if="imagePreview">
+                <div class="text-xs font-medium text-gray-500 mb-1 text-left">Pratinjau Gambar:</div>
+                <v-img
+                  :src="imagePreview"
+                  max-height="150"
+                  class="rounded-lg border border-gray-200 mt-1 bg-gray-100"
+                  contain
                 />
               </v-col>
             </v-row>
           </div>
 
           <div class="flex justify-end gap-3 items-center">
-            <v-btn variant="text" class="!text-gray-500 rounded-xl px-5" height="44" @click="$emit('update:modelValue', false)">
+            <v-btn variant="text" class="!text-gray-500 rounded-xl px-5" height="44" :disabled="isLoading" @click="$emit('update:modelValue', false)">
               Batal
             </v-btn>
-            <v-btn type="submit" class="apply-btn min-w-[140px]">
+            <v-btn 
+              type="submit" 
+              class="apply-btn min-w-[140px]"
+              :loading="isLoading"
+              :disabled="isLoading"
+            >
+              <template v-slot:loader>
+                <v-progress-circular indeterminate size="20" width="2" class="mr-2" />
+                Menyimpan...
+              </template>
               <v-icon left size="18" class="mr-1" icon="mdi-content-save-outline" />
               Simpan Item
             </v-btn>
@@ -95,12 +116,26 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+const isLoading = ref(false)
+const imagePreview = ref(null)
+
 const form = ref({
   kode: props.kodeItem,
   nama: '',
   harga: 0,
   image: null
 })
+
+// Fungsi untuk membuat objek URL lokal dari file gambar yang diunggah
+const handleImageChange = (file) => {
+  if (file) {
+    // Jika bentuknya array (tergantung konfigurasi vuetify), ambil indeks pertama
+    const targetFile = Array.isArray(file) ? file[0] : file
+    imagePreview.value = URL.createObjectURL(targetFile)
+  } else {
+    imagePreview.value = null
+  }
+}
 
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
@@ -110,6 +145,7 @@ watch(() => props.modelValue, (newValue) => {
       harga: 0,
       image: null
     }
+    imagePreview.value = null // Reset pratinjau saat dialog terbuka baru
   }
 })
 
@@ -119,16 +155,22 @@ const dialogModel = computed({
 })
 
 const submitForm = () => {
+  isLoading.value = true
+
   const data = new FormData()
   data.append('kode', form.value.kode)
   data.append('nama', form.value.nama)
   data.append('harga', form.value.harga)
+  
   if (form.value.image) {
-    data.append('image', form.value.image)
+    // Vuetify file input mengembalikan File object atau Array of File
+    const fileToSend = Array.isArray(form.value.image) ? form.value.image[0] : form.value.image
+    data.append('image', fileToSend)
   }
   
   router.post('/master/item', data, {
     onFinish: () => {
+      isLoading.value = false
       emit('update:modelValue', false)
     }
   })

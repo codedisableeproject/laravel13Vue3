@@ -93,3 +93,27 @@ body {
     }
   }
 }
+
+// --- FIX: MENYELARASKAN TEXT FIELD VUETIFY DENGAN TAILWIND ---
+.v-text-field {
+  // Memastikan teks label di dalam kolom input selalu rapi di pojok kiri
+  .v-label {
+    left: 0 !important;
+    right: auto !important;
+    transform-origin: top left !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  // Memastikan teks yang diinput (value) benar-benar mulai dari pojok kiri
+  input {
+    text-align: left !important;
+    padding-left: 16px !important; // Beri sedikit nafas agar tidak terlalu mepet border
+  }
+
+  // Jika Anda menggunakan prefix seperti "Rp", set ke rata kiri juga
+  .v-field__prefix {
+    align-items: center !important;
+    padding-right: 4px !important;
+  }
+}
