@@ -20,6 +20,17 @@
 
       <v-card-text class="p-6">
         <v-form @submit.prevent="submitForm">
+          <v-alert
+            v-if="flashError"
+            type="error"
+            variant="tonal"
+            density="comfortable"
+            class="mb-4 rounded-xl"
+            closable
+          >
+            {{ flashError }}
+          </v-alert>
+
           <div class="border border-gray-100 p-5 rounded-xl mb-6 bg-gray-50/30">
             <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
               <v-icon color="indigo" size="20" icon="mdi-information-outline" />
@@ -63,6 +74,7 @@
               item-value="value"
               variant="outlined"
               density="comfortable"
+              :error-messages="errors.penjualan_id"
               required
               @update:model-value="updateSelectedPenjualan"
             />
@@ -89,6 +101,7 @@
               variant="outlined"
               density="comfortable"
               prefix="Rp"
+              :error-messages="errors.nilai_bayar"
               required
             />
           </div>
@@ -97,7 +110,7 @@
             <v-btn variant="text" class="!text-gray-500 rounded-xl px-5" height="44" @click="$emit('update:modelValue', false)">
               Batal
             </v-btn>
-            <v-btn type="submit" class="apply-btn min-w-[140px]">
+            <v-btn type="submit" class="apply-btn min-w-[140px]" :loading="isSubmitting" :disabled="isSubmitting">
               <v-icon left size="18" class="mr-1" icon="mdi-content-save-outline" />
               Simpan Pembayaran
             </v-btn>
@@ -110,7 +123,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -120,9 +133,14 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+const page = usePage()
+const errors = computed(() => page.props.errors)
+const flashError = computed(() => page.props.flash?.error)
+
 const dateMenu = ref(false)
 const selectedPenjualan = ref(null)
 const selectedPenjualanTotal = ref(0)
+const isSubmitting = ref(false)
 const form = ref({
   kode_pembayaran: props.kodePembayaran,
   tanggal_pembayaran: new Date().toISOString().split('T')[0],
@@ -147,7 +165,6 @@ watch(() => props.modelValue, (newValue) => {
 const updateSelectedPenjualan = () => {
   if (form.value.penjualan_id) {
     selectedPenjualan.value = props.penjualans.find(p => p.id === form.value.penjualan_id)
-    // Calculate total already paid from related pembayarans
     selectedPenjualanTotal.value = (selectedPenjualan.value.pembayarans || []).reduce((sum, p) => sum + (p.nilai_bayar || 0), 0)
   } else {
     selectedPenjualan.value = null
@@ -165,9 +182,20 @@ const formatNumber = (num) => {
 }
 
 const submitForm = () => {
+  isSubmitting.value = true
   router.post('/pembayaran', form.value, {
-    onFinish: () => {
+    onSuccess: () => {
+      // Cek dulu apakah backend ngirim flash error
+      if (page.props.flash?.error) {
+        return // jangan tutup dialog, biar user liat pesannya
+      }
       emit('update:modelValue', false)
+    },
+    onError: () => {
+      // ini buat validation error (422) — dialog tetap kebuka otomatis
+    },
+    onFinish: () => {
+      isSubmitting.value = false
     }
   })
 }

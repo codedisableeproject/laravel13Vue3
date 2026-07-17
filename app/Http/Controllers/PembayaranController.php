@@ -6,10 +6,28 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Pembayaran;
 use App\Models\Penjualan;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
 class PembayaranController extends Controller
 {
+
+    private function rulesNilaiBayarHarusPas(?float $sisaBayar)
+    {
+        return function ($attribute, $value, $fail) use ($sisaBayar) {
+            if ($sisaBayar === null) {
+                return; // biar rule exists:penjualans,id yang nangkep kalau penjualan_id invalid
+            }
+            if ($value < $sisaBayar) {
+                $kurang = $sisaBayar - $value;
+                $fail('Nilai bayar kurang Rp ' . number_format($kurang, 0, ',', '.') . '. Sisa bayar yang harus dilunasi adalah Rp ' . number_format($sisaBayar, 0, ',', '.') . '.');
+            } elseif ($value > $sisaBayar) {
+                $lebih = $value - $sisaBayar;
+                $fail('Nilai bayar lebih Rp ' . number_format($lebih, 0, ',', '.') . '. Sisa bayar yang harus dilunasi adalah Rp ' . number_format($sisaBayar, 0, ',', '.') . '.');
+            }
+        };
+    }
+
     public function index(Request $request)
     {
         $query = Pembayaran::with(['penjualan' => function($q) {
@@ -41,20 +59,28 @@ class PembayaranController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'kode_pembayaran' => 'required|unique:pembayarans',
-            'penjualan_id' => 'required|exists:penjualans,id',
-            'tanggal_pembayaran' => 'required|date',
-            'nilai_bayar' => 'required|numeric|min:1',
-        ]);
+        $penjualan = Penjualan::find($request->penjualan_id);
+        $sisaBayar = $penjualan ? $penjualan->total - $penjualan->totalSudahDibayar() : null;
+
+            $request->validate([
+                'kode_pembayaran' => 'required|unique:pembayarans',
+                'penjualan_id' => 'required|exists:penjualans,id',
+                'tanggal_pembayaran' => 'required|date',
+                'nilai_bayar' => ['required', 'numeric', $this->rulesNilaiBayarHarusPas($sisaBayar)],
+            ], [
+                'kode_pembayaran.required' => 'Kode pembayaran wajib diisi.',
+                'kode_pembayaran.unique' => 'Kode pembayaran sudah digunakan.',
+                'penjualan_id.required' => 'Pilih penjualan terlebih dahulu.',
+                'penjualan_id.exists' => 'Penjualan yang dipilih tidak valid.',
+                'tanggal_pembayaran.required' => 'Tanggal pembayaran wajib diisi.',
+                'tanggal_pembayaran.date' => 'Format tanggal tidak valid.',
+                'nilai_bayar.required' => 'Nilai bayar wajib diisi.',
+                'nilai_bayar.numeric' => 'Nilai bayar harus berupa angka.',
+            ]);
 
         $penjualan = Penjualan::findOrFail($request->penjualan_id);
-        $totalSudahDibayar = $penjualan->totalSudahDibayar();
-        if ($totalSudahDibayar + $request->nilai_bayar > $penjualan->total) {
-            return back()->with('error', 'Nilai bayar melebihi total penjualan!');
-        }
 
-        DB::transaction(function () use ($request, $penjualan, $totalSudahDibayar) {
+        DB::transaction(function () use ($request, $penjualan) {
             Pembayaran::create([
                 'kode_pembayaran' => $request->kode_pembayaran,
                 'penjualan_id' => $request->penjualan_id,
@@ -62,11 +88,7 @@ class PembayaranController extends Controller
                 'nilai_bayar' => $request->nilai_bayar
             ]);
 
-            if ($totalSudahDibayar + $request->nilai_bayar == $penjualan->total) {
-                $penjualan->update(['status' => 'Sudah Dibayar']);
-            } else {
-                $penjualan->update(['status' => 'Belum Dibayar Sepenuhnya']);
-            }
+            $penjualan->update(['status' => 'Sudah Dibayar']);
         });
 
         return redirect()->route('pembayaran.index')->with('success', 'Pembayaran berhasil dibuat!');
