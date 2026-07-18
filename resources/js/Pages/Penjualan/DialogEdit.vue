@@ -28,6 +28,7 @@
                 variant="flat"
                 density="comfortable"
                 class="bg-slate-50 rounded-xl"
+                :error-messages="errors.kode_penjualan"
                 required
               />
             </v-col>
@@ -79,7 +80,7 @@
                       item-value="value"
                       variant="outlined"
                       density="comfortable"
-                      hide-details
+                      :error-messages="errors[`items.${index}.item_id`]"
                       required
                       @update:model-value="updateItemPrice(index)"
                     />
@@ -93,7 +94,7 @@
                       min="1"
                       variant="outlined"
                       density="comfortable"
-                      hide-details
+                      :error-messages="errors[`items.${index}.qty`]"
                       required
                       class="text-center"
                       @input="calculateTotal(index)"
@@ -102,12 +103,12 @@
 
                   <v-col cols="12" sm="4" md="3" class="pa-1">
                     <v-text-field
-                      v-model="item.price"
+                      :model-value="$formatNumber(item.price)"
                       label="Harga Satuan"
                       prefix="Rp"
                       variant="outlined"
                       density="comfortable"
-                      hide-details
+                      :error-messages="errors.price"
                       readonly
                       class="bg-slate-50/50 tabular-nums"
                     />
@@ -120,8 +121,8 @@
                       prefix="Rp"
                       variant="outlined"
                       density="comfortable"
-                      hide-details
                       readonly
+                      :error-messages="errors.total_price"
                       class="bg-slate-50/50 font-semibold text-gray-900 tabular-nums"
                     />
                   </v-col>
@@ -153,7 +154,7 @@
             <v-btn variant="text" class="!text-gray-500 rounded-xl px-5" height="44" @click="$emit('update:modelValue', false)">
               Batal
             </v-btn>
-            <v-btn type="submit" class="apply-btn min-w-[140px]">
+            <v-btn type="submit" class="apply-btn min-w-[140px]" :loading="isSubmitting" :disabled="isSubmitting">
               <v-icon left size="18" class="mr-1" icon="mdi-content-save-outline" />
               Simpan Perubahan
             </v-btn>
@@ -166,7 +167,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -176,7 +177,11 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+const page = usePage()
+const errors = computed(() => page.props.errors)
+
 const dateMenu = ref(false)
+const isSubmitting = ref(false)
 const form = ref({
   kode_penjualan: '',
   tanggal_penjualan: '',
@@ -186,6 +191,7 @@ const form = ref({
 // Reset form when dialog opens
 watch(() => props.modelValue, (newVal) => {
   if (newVal && props.penjualan) {
+    page.props.errors = {}
     form.value = {
       kode_penjualan: props.penjualan.kode_penjualan,
       tanggal_penjualan: props.penjualan.tanggal_penjualan,
@@ -239,9 +245,19 @@ const calculateTotal = (index) => {
 // }
 
 const submitForm = () => {
+  isSubmitting.value = true
   router.put(`/penjualan/${props.penjualan.id}`, form.value, {
-    onFinish: () => {
+    onSuccess: () => {
+
+      if(page.props.flash?.error) return
+
       emit('update:modelValue', false)
+    },
+    onError: () => {
+      
+    },
+    onFinish: () => {
+      isSubmitting.value = false
     }
   })
 }

@@ -45,7 +45,7 @@
                       <v-icon size="18" class="mr-3 text-indigo-500" icon="mdi-calendar" />
                       <div class="text-left">
                         <div class="text-[10px] uppercase tracking-wide text-gray-400 leading-none mb-0.5">Tanggal Pembayaran</div>
-                        <div class="text-sm font-semibold text-gray-800">{{ form.tanggal_pembayaran || 'Pilih Tanggal' }}</div>
+                        <div class="text-sm font-semibold text-gray-800">{{ $formatDate(form.tanggal_pembayaran) || 'Pilih Tanggal' }}</div>
                       </div>
                     </v-btn>
                   </template>
@@ -135,6 +135,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
+import formatHelpers from '@/utils/format.js'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -146,6 +147,7 @@ const emit = defineEmits(['update:modelValue'])
 
 const page = usePage()
 const errors = computed(() => page.props.errors)
+const { getTodayString } = formatHelpers
 
 const dateMenu = ref(false)
 const selectedPenjualan = ref(null)
@@ -153,7 +155,7 @@ const selectedPenjualanTotal = ref(0)
 const isSubmitting = ref(false)
 const form = ref({
   kode_pembayaran: props.kodePembayaran,
-  tanggal_pembayaran: new Date().toISOString().split('T')[0],
+  tanggal_pembayaran: getTodayString(),
   penjualan_id: null,
   nilai_bayar: 0
 })
@@ -161,9 +163,10 @@ const form = ref({
 // Reset form ketika dialog dibuka
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
+    page.props.errors = {}
     form.value = {
       kode_pembayaran: props.kodePembayaran,
-      tanggal_pembayaran: new Date().toISOString().split('T')[0],
+      tanggal_pembayaran: getTodayString(),
       penjualan_id: null,
       nilai_bayar: 0
     }
@@ -193,9 +196,9 @@ const submitForm = () => {
   isSubmitting.value = true
   router.post('/pembayaran', form.value, {
     onSuccess: () => {
-      // Cek dulu apakah backend ngirim flash error
+   
       if (page.props.flash?.error) {
-        return // jangan tutup dialog, biar user liat pesannya
+        return
       }
       emit('update:modelValue', false)
     },

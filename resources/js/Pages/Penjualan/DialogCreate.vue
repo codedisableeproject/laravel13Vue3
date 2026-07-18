@@ -45,7 +45,7 @@
                       <v-icon size="18" class="mr-3 text-indigo-500" icon="mdi-calendar" />
                       <div class="text-left">
                         <div class="text-[10px] uppercase tracking-wide text-gray-400 leading-none mb-0.5">Tanggal Transaksi</div>
-                        <div class="text-sm font-semibold text-gray-800">{{ form.tanggal_penjualan || 'Pilih Tanggal' }}</div>
+                        <div class="text-sm font-semibold text-gray-800">{{ $formatDate(form.tanggal_penjualan) || 'Pilih Tanggal' }}</div>
                       </div>
                     </v-btn>
                   </template>
@@ -94,7 +94,7 @@
                       item-value="value"
                       variant="outlined"
                       density="comfortable"
-                      hide-details
+                      :error-messages="errors[`items.${index}.item_id`]"
                       required
                       @update:model-value="updateItemPrice(index)"
                     />
@@ -109,7 +109,7 @@
                       min="1"
                       variant="outlined"
                       density="comfortable"
-                      hide-details
+                      :error-messages="errors[`items.${index}.qty`]"
                       required
                       class="text-center"
                       @input="calculateTotal(index)"
@@ -119,7 +119,7 @@
                   <!-- Harga Satuan -->
                   <v-col cols="12" sm="4" md="3" class="pa-1">
                     <v-text-field
-                      v-model="item.price"
+                      :model-value="formatNumber(item.price)"
                       label="Harga Satuan"
                       prefix="Rp"
                       variant="outlined"
@@ -174,7 +174,7 @@
             <v-btn variant="text" class="!text-gray-500 rounded-xl px-5" height="44" @click="$emit('update:modelValue', false)">
               Batal
             </v-btn>
-            <v-btn type="submit" class="apply-btn min-w-[140px]">
+            <v-btn type="submit" class="apply-btn min-w-[140px]" :loading="isSubmitting" :disabled="isSubmitting">
               <v-icon left size="18" class="mr-1" icon="mdi-content-save-outline" />
               Simpan Transaksi
             </v-btn>
@@ -187,7 +187,8 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
+import formatHelpers from '@/utils/format.js'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -197,10 +198,17 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+const page = usePage()
+const errors = computed(() => page.props.errors)
+
+const { getTodayString } = formatHelpers
+
 const dateMenu = ref(false)
+const isSubmitting = ref(false)
+
 const form = ref({
   kode_penjualan: props.kodePenjualan,
-  tanggal_penjualan: new Date().toISOString().split('T')[0],
+  tanggal_penjualan: getTodayString(),
   items: [
     { item_id: null, qty: 1, price: 0, total_price: 0 }
   ]
@@ -209,9 +217,10 @@ const form = ref({
 // Reset form ketika dialog dibuka
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
+    page.props.errors = {}
     form.value = {
       kode_penjualan: props.kodePenjualan,
-      tanggal_penjualan: new Date().toISOString().split('T')[0],
+      tanggal_penjualan: getTodayString(),
       items: [
         { item_id: null, qty: 1, price: 0, total_price: 0 }
       ]
@@ -257,9 +266,19 @@ const formatNumber = (num) => {
 }
 
 const submitForm = () => {
+  isSubmitting.value = true
   router.post('/penjualan', form.value, {
-    onFinish: () => {
+    onSuccess: () => {
+      if (page.props.flash?.error) {
+        return
+      }
       emit('update:modelValue', false)
+    },
+    onError: () => {
+      
+    },
+    onFinish: () => {
+      isSubmitting.value = false
     }
   })
 }

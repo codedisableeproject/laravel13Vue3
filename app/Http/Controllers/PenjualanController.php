@@ -44,13 +44,23 @@ class PenjualanController extends Controller
     {
         $request->validate([
             'kode_penjualan' => 'required|unique:penjualans',
-            'tanggal_penjualan' => 'required|date',
+            'tanggal_penjualan' => 'required',
             'items' => 'required|array|min:1',
             'items.*.item_id' => 'required|exists:items,id',
             'items.*.qty' => 'required|integer|min:1',
+        ],[
+       
+            'items.*.item_id.required' => 'Barang wajib dipilih.',
+            'items.*.item_id.exists'   => 'Barang tidak valid.',
+            'items.*.qty.required'     => 'Jumlah (Qty) wajib diisi.',
+            'items.*.qty.min'          => 'Jumlah (Qty) minimal 1.',
         ]);
 
-        DB::transaction(function () use ($request) {
+        $tanggalLokal = Carbon::parse($request->tanggal_penjualan)
+            ->setTimezone('Asia/Jakarta')
+            ->format('Y-m-d');
+        
+        DB::transaction(function () use ($request, $tanggalLokal) {
             $total = 0;
             foreach ($request->items as $item) {
                 $itemData = Item::find($item['item_id']);
@@ -59,7 +69,7 @@ class PenjualanController extends Controller
 
             $penjualan = Penjualan::create([
                 'kode_penjualan' => $request->kode_penjualan,
-                'tanggal_penjualan' => $request->tanggal_penjualan,
+                'tanggal_penjualan' => $tanggalLokal,
                 'total' => $total,
                 'status' => 'Belum Dibayar'
             ]);
@@ -108,9 +118,18 @@ class PenjualanController extends Controller
             'items' => 'required|array|min:1',
             'items.*.item_id' => 'required|exists:items,id',
             'items.*.qty' => 'required|integer|min:1',
+        ],[
+            'items.*.item_id.required' => 'Barang wajib dipilih.',
+            'items.*.item_id.exists'   => 'Barang tidak valid.',
+            'items.*.qty.required'     => 'Jumlah (Qty) wajib diisi.',
+            'items.*.qty.min'          => 'Jumlah (Qty) minimal 1.',
         ]);
 
-        DB::transaction(function () use ($request, $penjualan) {
+        $tanggalLokal = Carbon::parse($request->tanggal_penjualan)
+        ->setTimezone('Asia/Jakarta')
+        ->format('Y-m-d');
+
+        DB::transaction(function () use ($request, $penjualan, $tanggalLokal) {
             $total = 0;
             foreach ($request->items as $item) {
                 $itemData = Item::find($item['item_id']);
@@ -118,7 +137,7 @@ class PenjualanController extends Controller
             }
 
             $penjualan->update([
-                'tanggal_penjualan' => $request->tanggal_penjualan,
+                'tanggal_penjualan' => $tanggalLokal,
                 'total' => $total
             ]);
 

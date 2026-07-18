@@ -92,7 +92,7 @@ class ItemController extends Controller
         $item->update([
             'deleted' => 1,
             'deleted_at' => now(),
-            'deleted_by' => auth()->id()
+            'deleted_by' => auth()->id() // jika id bergaris merah biarin aja fungsi tetap jalan kok
         ]);
         return redirect()->route('item.index')->with('success', 'Item berhasil dihapus!');
     }

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 class PembayaranController extends Controller
 {
 
-    private function rulesNilaiBayarHarusPas(?float $sisaBayar)
+    private function rulesNilaiBayar(?float $sisaBayar)
     {
         return function ($attribute, $value, $fail) use ($sisaBayar) {
             if ($sisaBayar === null) {
@@ -76,7 +76,7 @@ class PembayaranController extends Controller
                 'kode_pembayaran' => 'required|unique:pembayarans',
                 'penjualan_id' => 'required|exists:penjualans,id',
                 'tanggal_pembayaran' => 'required|date',
-                'nilai_bayar' => ['required', 'numeric', $this->rulesNilaiBayarHarusPas($sisaBayar)],
+                'nilai_bayar' => ['required', 'numeric', $this->rulesNilaiBayar($sisaBayar)],
             ], [
                 'kode_pembayaran.required' => 'Kode pembayaran wajib diisi.',
                 'kode_pembayaran.unique' => 'Kode pembayaran sudah digunakan.',
@@ -122,25 +122,33 @@ class PembayaranController extends Controller
         $pembayaran = Pembayaran::findOrFail($id);
         $penjualan = Penjualan::findOrFail($pembayaran->penjualan_id);
 
+        $totalSudahDibayarSainnya = $penjualan->totalSudahDibayar() - $pembayaran->nilai_bayar;
+        $sisaBayar = $penjualan->total - $totalSudahDibayarSainnya;
         $request->validate([
-            'tanggal_pembayaran' => 'required|date',
-            'nilai_bayar' => 'required|numeric|min:1',
-        ]);
-
-        $totalSudahDibayar = $penjualan->totalSudahDibayar() - $pembayaran->nilai_bayar;
-        if ($totalSudahDibayar + $request->nilai_bayar > $penjualan->total) {
-            return back()->with('error', 'Nilai bayar melebihi total penjualan!');
-        }
-
-        DB::transaction(function () use ($request, $pembayaran, $penjualan, $totalSudahDibayar) {
-            $pembayaran->update([
-                'tanggal_pembayaran' => $request->tanggal_pembayaran,
-                'nilai_bayar' => $request->nilai_bayar
+                'tanggal_pembayaran' => 'required|date',
+                'nilai_bayar' => ['required', 'numeric', $this->rulesNilaiBayar($sisaBayar)],
+            ], [
+                'tanggal_pembayaran.required' => 'Tanggal pembayaran wajib diisi.',
+                'tanggal_pembayaran.date' => 'Format tanggal tidak valid.',
+                'nilai_bayar.required' => 'Nilai bayar wajib diisi.',
+                'nilai_bayar.numeric' => 'Nilai bayar harus berupa angka.',
             ]);
 
-            if ($totalSudahDibayar + $request->nilai_bayar == $penjualan->total) {
+        $tanggalLokal = Carbon::parse($request->tanggal_pembayaran)
+        ->setTimezone('Asia/Jakarta')
+        ->format('Y-m-d');
+
+        DB::transaction(function () use ($request, $pembayaran, $penjualan, $totalSudahDibayarSainnya, $tanggalLokal) {
+        $pembayaran->update([
+            'tanggal_pembayaran' => $tanggalLokal,
+            'nilai_bayar' => $request->nilai_bayar
+        ]);
+
+        $totalBaru = $totalSudahDibayarSainnya + $request->nilai_bayar;
+
+            if ($totalBaru == $penjualan->total) {
                 $penjualan->update(['status' => 'Sudah Dibayar']);
-            } elseif ($totalSudahDibayar + $request->nilai_bayar > 0) {
+            } elseif ($totalBaru > 0) {
                 $penjualan->update(['status' => 'Belum Dibayar Sepenuhnya']);
             } else {
                 $penjualan->update(['status' => 'Belum Dibayar']);
@@ -156,8 +164,11 @@ class PembayaranController extends Controller
         $penjualan = Penjualan::findOrFail($pembayaran->penjualan_id);
 
         DB::transaction(function () use ($pembayaran, $penjualan) {
-            $pembayaran->update(['deleted' => 1]);
-            $pembayaran->delete();
+            $pembayaran->update([
+                'deleted' => 1,
+                'deleted_at' => now(),
+                'deleted_by' => auth()->id(), // jika id bergaris merah biarin aja fungsi tetap jalan kok
+            ]);
 
             $totalSudahDibayar = $penjualan->totalSudahDibayar();
             if ($totalSudahDibayar == $penjualan->total) {

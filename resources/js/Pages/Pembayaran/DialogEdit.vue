@@ -33,6 +33,7 @@
                   variant="flat"
                   density="comfortable"
                   class="bg-slate-50 rounded-xl"
+                  :error-messages="errors.kode_pembayaran"
                   required
                 />
               </v-col>
@@ -60,6 +61,7 @@
               disabled
               variant="outlined"
               density="comfortable"
+              :error-messages="errors.penjualan_id"
             />
           </div>
 
@@ -77,14 +79,15 @@
 
           <div class="mb-6">
             <v-text-field
-              v-model.number="form.nilai_bayar"
+              :model-value="$formatNumber(form.nilai_bayar)"
               label="Nilai Bayar"
-              type="number"
               min="1"
               variant="outlined"
               density="comfortable"
               prefix="Rp"
-              required
+              :error-messages="errors.nilai_bayar"
+              required@update:model-value="val => $handleInputNumber(val, 'nilai_bayar', form)"
+
             />
           </div>
 
@@ -92,7 +95,7 @@
             <v-btn variant="text" class="!text-gray-500 rounded-xl px-5" height="44" @click="$emit('update:modelValue', false)">
               Batal
             </v-btn>
-            <v-btn type="submit" class="apply-btn min-w-[140px]">
+            <v-btn type="submit" class="apply-btn min-w-[140px]" :loading="isSubmitting" :disabled="isSubmitting">
               <v-icon left size="18" class="mr-1" icon="mdi-content-save-outline" />
               Simpan Perubahan
             </v-btn>
@@ -105,7 +108,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -114,11 +117,15 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+const page = usePage()
+const errors = computed(() => page.props.errors)
+
 const dateMenu = ref(false)
 const penjualanKode = ref('')
 const penjualan = ref(null)
 const penjualanTotal = ref(0)
 const currentNilaiBayar = ref(0)
+const isSubmitting = ref(false)
 const form = ref({
   kode_pembayaran: '',
   tanggal_pembayaran: '',
@@ -128,6 +135,9 @@ const form = ref({
 // Reset form when dialog opens
 watch(() => props.modelValue, (newVal) => {
   if (newVal && props.pembayaran) {
+
+    page.props.errors = {}
+
     form.value = {
       kode_pembayaran: props.pembayaran.kode_pembayaran,
       tanggal_pembayaran: props.pembayaran.tanggal_pembayaran,
@@ -152,9 +162,21 @@ const dialogModel = computed({
 // }
 
 const submitForm = () => {
+  isSubmitting.value = true
   router.put(`/pembayaran/${props.pembayaran.id}`, form.value, {
-    onFinish: () => {
+    onSuccess: () => {
+      // Sama seperti create, jika dilempar flash error dari session Laravel,
+      // jangan tutup dialog agar user dapat membaca pesan toast/balon errornya.
+      if (page.props.flash?.error) {
+        return
+      }
       emit('update:modelValue', false)
+    },
+    onError: () => {
+      // Error validasi form input otomatis terikat di komponen v-text-field
+    },
+    onFinish: () => {
+      isSubmitting.value = false
     }
   })
 }
