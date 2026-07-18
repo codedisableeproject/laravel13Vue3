@@ -13,7 +13,7 @@ class UserSeeder extends Seeder
         DB::table('users')->insert([
             // 1. Akun Admin (role_id = 1)
             [
-                'name'       => 'Admin Ganteng',
+                'name'       => 'Admin',
                 'email'      => 'admin@example.com',
                 'role_id'    => 1, // Mengarah ke role 'admin'
                 'password'   => Hash::make('password'),

@@ -3,6 +3,8 @@ import '../css/app.scss'; // Import global SCSS
 
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
+import Toast from 'vue-toastification'
+import 'vue-toastification/dist/index.css'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 // Setup Vuetify
@@ -20,6 +22,9 @@ import registerGlobalUsage from './useGlobal';
 
 // Setup Icons
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
+
+// helpers format
+import formatHelpers from './Utils/format';
 
 const vuetify = createVuetify({
     components,
@@ -42,10 +47,21 @@ createInertiaApp({
         const app = createApp({ render: () => h(App, props) })
             .use(plugin) // Gunakan Inertia
             .use(pinia)  // Gunakan Pinia
-            .use(vuetify); // Gunakan Vuetify
+            .use(vuetify) // Gunakan Vuetify
+            .use(Toast, { // Toastifikasi
+                position: "top-right",
+                timeout: 3000,
+                closeOnClick: true,
+                pauseOnHover: true
+            });
         
         registerGlobalUsage(app);
         
+
+        Object.entries(formatHelpers).forEach(([key, value]) => {
+            app.config.globalProperties[`$${key}`] = value;
+        });
+
         app.mount(el);
     },
 

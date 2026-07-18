@@ -20,16 +20,6 @@
 
       <v-card-text class="p-6">
         <v-form @submit.prevent="submitForm">
-          <v-alert
-            v-if="flashError"
-            type="error"
-            variant="tonal"
-            density="comfortable"
-            class="mb-4 rounded-xl"
-            closable
-          >
-            {{ flashError }}
-          </v-alert>
 
           <div class="border border-gray-100 p-5 rounded-xl mb-6 bg-gray-50/30">
             <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -68,7 +58,7 @@
           <div class="mb-6">
             <v-select
               v-model="form.penjualan_id"
-              :items="penjualans.map(p => ({ title: `${p.kode_penjualan} - Rp ${formatNumber(p.total)}`, value: p.id }))"
+              :items="penjualans.map(p => ({ title: `${p.kode_penjualan} - Rp ${$formatNumber(p.total)}`, value: p.id }))"
               label="Pilih Penjualan"
               item-title="title"
               item-value="value"
@@ -80,29 +70,50 @@
             />
           </div>
 
+          <!-- Tampilan Detail Barang di DialogCreate.vue -->
+          <div v-if="selectedPenjualan && (selectedPenjualan.items && selectedPenjualan.items.length > 0)" class="mb-6 border border-gray-200 rounded-xl overflow-hidden">
+            <div class="bg-gray-100 px-4 py-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Rincian Item yang Dibeli
+            </div>
+            <div class="divide-y divide-gray-100 max-h-[200px] overflow-y-auto">
+              <div v-for="item in selectedPenjualan.items" :key="item.id" class="p-3 flex justify-between items-center bg-white">
+                <div>
+                  <!-- Mengambil nama produk dari relasi item -->
+                  <p class="text-sm font-semibold text-gray-800">{{ item.item?.nama || 'Produk Tanpa Nama' }}</p>
+                  <p class="text-xs text-gray-500">
+                    Rp {{ $formatNumber(item.price) }} × {{ item.qty }}
+                  </p>
+                </div>
+                <div class="text-sm font-bold text-gray-700">
+                  Rp {{ $formatNumber(item.total_price) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div v-if="selectedPenjualan" class="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-xl">
             <p class="text-sm text-amber-800 mb-1">
-              <strong>Total Penjualan:</strong> Rp {{ formatNumber(selectedPenjualan.total) }}
+              <strong>Total Penjualan:</strong> Rp {{ $formatNumber(selectedPenjualan.total) }}
             </p>
             <p class="text-sm text-amber-800 mb-1">
-              <strong>Sudah Dibayar:</strong> Rp {{ formatNumber(selectedPenjualanTotal) }}
+              <strong>Sudah Dibayar:</strong> Rp {{ $formatNumber(selectedPenjualanTotal) }}
             </p>
             <p class="text-sm text-amber-800">
-              <strong>Sisa Bayar:</strong> Rp {{ formatNumber(selectedPenjualan.total - selectedPenjualanTotal) }}
+              <strong>Sisa Bayar:</strong> Rp {{ $formatNumber(selectedPenjualan.total - selectedPenjualanTotal) }}
             </p>
           </div>
 
           <div class="mb-6">
             <v-text-field
-              v-model.number="form.nilai_bayar"
+              :model-value="$formatNumber(form.nilai_bayar)"
               label="Nilai Bayar"
-              type="number"
               min="1"
               variant="outlined"
               density="comfortable"
               prefix="Rp"
               :error-messages="errors.nilai_bayar"
               required
+              @update:model-value="val => $handleInputNumber(val, 'nilai_bayar', form)"
             />
           </div>
 
@@ -135,7 +146,6 @@ const emit = defineEmits(['update:modelValue'])
 
 const page = usePage()
 const errors = computed(() => page.props.errors)
-const flashError = computed(() => page.props.flash?.error)
 
 const dateMenu = ref(false)
 const selectedPenjualan = ref(null)
@@ -165,7 +175,9 @@ watch(() => props.modelValue, (newValue) => {
 const updateSelectedPenjualan = () => {
   if (form.value.penjualan_id) {
     selectedPenjualan.value = props.penjualans.find(p => p.id === form.value.penjualan_id)
-    selectedPenjualanTotal.value = (selectedPenjualan.value.pembayarans || []).reduce((sum, p) => sum + (p.nilai_bayar || 0), 0)
+    
+    // Tinggal panggil properti ini, otomatis realtime saat select diganti
+    selectedPenjualanTotal.value = selectedPenjualan.value.pembayarans_sum_nilai_bayar || 0
   } else {
     selectedPenjualan.value = null
     selectedPenjualanTotal.value = 0
@@ -176,10 +188,6 @@ const dialogModel = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value)
 })
-
-const formatNumber = (num) => {
-  return new Intl.NumberFormat('id-ID').format(num || 0)
-}
 
 const submitForm = () => {
   isSubmitting.value = true

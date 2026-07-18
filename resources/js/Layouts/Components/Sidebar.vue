@@ -13,7 +13,8 @@
 
     <v-list density="comfortable" nav>
       
-      <template v-for="(menu, index) in $page.props.menus" :key="index">
+     <template v-for="(menu, index) in $page.props.menus" :key="index">
+        <!-- JIKA PUNYA CHILDREN (MASTER) -->
         <v-list-group 
           v-if="menu.children"
           :prepend-icon="menu.icon" 
@@ -25,37 +26,31 @@
             <v-list-item v-bind="props"></v-list-item>
           </template>
           
-          <Link 
+          <!-- Bagian Child Menu -->
+          <v-list-item 
             v-for="(child, childIndex) in menu.children" 
             :key="childIndex"
-            :href="child.url" 
-            prefetch 
-            class="text-decoration-none text-white"
-          >
-            <v-list-item 
-              :prepend-icon="child.icon" 
-              :title="child.title" 
-              :value="child.title"
-              :active="$page.url === child.url"
-              color="white"
-            ></v-list-item>
-          </Link>
+            :prepend-icon="child.icon" 
+            :title="child.title" 
+            :value="child.title"
+            :active="$page.url === child.url"
+            color="white"
+            class="text-white"
+            @click.prevent="router.visit(child.url)"
+          ></v-list-item>
         </v-list-group>
         
-        <Link 
+        <!-- JIKA MENU BIASA (DASHBOARD, PENJUALAN, DLL) -->
+        <v-list-item 
           v-else
-          :href="menu.url" 
-          prefetch 
-          class="text-decoration-none text-white"
-        >
-          <v-list-item 
-            :prepend-icon="menu.icon" 
-            :title="menu.title" 
-            :value="menu.title"
-            :active="$page.url === menu.url"
-            color="white"
-          ></v-list-item>
-        </Link>
+          :prepend-icon="menu.icon" 
+          :title="menu.title" 
+          :value="menu.title"
+          :active="$page.url === menu.url"
+          color="white"
+          class="text-white"
+          @click.prevent="router.visit(menu.url)"
+        ></v-list-item>
       </template>
 
     </v-list>
@@ -63,7 +58,7 @@
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 
 const drawer = defineModel();
 </script>

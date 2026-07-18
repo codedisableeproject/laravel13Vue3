@@ -31,7 +31,7 @@
                     class="text-sm font-medium text-gray-800"
                   >
                     {{
-                      formatDate(startDate) ||
+                      $formatDate(startDate) ||
                       "Pilih Tanggal"
                     }}
                   </div>
@@ -51,7 +51,7 @@
                 <v-icon size="18" class="mr-2 text-indigo-500" icon="mdi-calendar-end" />
                 <div class="text-left">
                   <div class="text-[11px] uppercase tracking-wide text-gray-400 leading-none mb-1">Sampai Tanggal</div>
-                  <div class="text-sm font-medium text-gray-800">{{ formatDate(endDate)  || 'Pilih Tanggal' }}</div>
+                  <div class="text-sm font-medium text-gray-800">{{ $formatDate(endDate)  || 'Pilih Tanggal' }}</div>
                 </div>
               </v-btn>
             </template>
@@ -100,7 +100,10 @@
           class="custom-table"
           hide-default-footer
         >
-          <template v-slot:item.actions="{ item }">
+        <template #item.tanggal_pembayaran="{ item }">
+            {{ $formatDate(item.tanggal_pembayaran) }}
+          </template>
+          <template #item.actions="{ item }">
             <div class="flex items-center justify-end gap-1.5">
               <v-btn
                 class="action-icon-btn text-indigo-600 hover:bg-indigo-50"
@@ -125,8 +128,8 @@
               </v-btn>
             </div>
           </template>
-          <template v-slot:item.nilai_bayar="{ item }">
-            Rp {{ formatNumber(item.nilai_bayar) }}
+          <template #item.nilai_bayar="{ item }">
+            Rp {{ $formatNumber(item.nilai_bayar) }}
           </template>
         </v-data-table>
 
@@ -162,8 +165,9 @@
 </template>
 
 <script setup>
-import { ref, getCurrentInstance } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { ref, getCurrentInstance, watch } from 'vue'
+import { router, usePage } from '@inertiajs/vue3'
+import { useToast } from 'vue-toastification'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import DialogCreate from './DialogCreate.vue'
 import DialogShow from './DialogShow.vue'
@@ -174,6 +178,22 @@ const props = defineProps({
   penjualans: Array,
   kodePembayaran: String
 })
+
+const toast = useToast()
+const page = usePage()
+
+watch(
+  () => page.props.flash,
+  (newFlash) => {
+    if (newFlash?.success) {
+      toast.success(newFlash.success)
+    }
+    if (newFlash?.error) {
+      toast.error(newFlash.error)
+    }
+  },
+  { deep: true, immediate: true }
+)
 
 const { proxy } = getCurrentInstance()
 const $dialogNotif = proxy.$dialogNotif
@@ -196,16 +216,6 @@ const createDialogOpen = ref(false)
 const showDialogOpen = ref(false)
 const editDialogOpen = ref(false)
 const selectedPembayaran = ref(null)
-
-const formatNumber = (num) => {
-  return new Intl.NumberFormat('id-ID').format(num || 0)
-}
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return null
-  const date = new Date(dateStr)
-  return new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium' }).format(date)
-}
 
 const changePage = (page) => {
   router.visit(`/pembayaran?page=${page}`)

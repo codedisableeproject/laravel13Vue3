@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Pembayaran;
 use App\Models\Penjualan;
-use Illuminate\Validation\Rule;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class PembayaranController extends Controller
@@ -30,21 +30,31 @@ class PembayaranController extends Controller
 
     public function index(Request $request)
     {
-        $query = Pembayaran::with(['penjualan' => function($q) {
-            $q->with(['pembayarans' => function($qq) {
+        // Ambil data untuk tabel utama Pembayaran
+        $pembayarans = Pembayaran::with(['penjualan' => function($q) {
+            $q->where('deleted', 0)
+            ->withSum(['pembayarans' => function($qq) {
                 $qq->where('deleted', 0);
-            }])->where('deleted', 0);
+            }], 'nilai_bayar'); // <--- Hitung dari belakang lewat SQL
         }])->where('deleted', 0)->orderBy('created_at', 'desc');
 
         if ($request->tanggal_mulai && $request->tanggal_selesai) {
-            $query->whereBetween('tanggal_pembayaran', [$request->tanggal_mulai, $request->tanggal_selesai]);
+            $pembayarans->whereBetween('tanggal_pembayaran', [$request->tanggal_mulai, $request->tanggal_selesai]);
         }
 
-        $pembayarans = $query->paginate(10);
-        $penjualans = Penjualan::with(['pembayarans' => function($q) {
+        $pembayarans = $pembayarans->paginate(10);
+
+        // Ambil data untuk dropdown di DialogCreate
+        $penjualans = Penjualan::withSum(['pembayarans' => function($q) {
             $q->where('deleted', 0);
-        }])->where('deleted', 0)->where('status', '!=', 'Sudah Dibayar')->get();
+        }], 'nilai_bayar') // <--- Hitung dari belakang lewat SQL
+        ->with(['items.item'])
+        ->where('deleted', 0)
+        ->where('status', '!=', 'Sudah Dibayar')
+        ->get();
+
         $kodePembayaran = 'PMB-' . date('Ymd') . '-' . str_pad(Pembayaran::where('deleted', 0)->count() + 1, 4, '0', STR_PAD_LEFT);
+
         return Inertia::render('Pembayaran/Index', compact('pembayarans', 'penjualans', 'kodePembayaran'));
     }
 

@@ -43,7 +43,7 @@
                       <v-icon size="18" class="mr-3 text-indigo-500" icon="mdi-calendar" />
                       <div class="text-left">
                         <div class="text-[10px] uppercase tracking-wide text-gray-400 leading-none mb-0.5">Tanggal Pembayaran</div>
-                        <div class="text-sm font-semibold text-gray-800">{{ form.tanggal_pembayaran || 'Pilih Tanggal' }}</div>
+                        <div class="text-sm font-semibold text-gray-800">{{ $formatDate(form.tanggal_pembayaran) || 'Pilih Tanggal' }}</div>
                       </div>
                     </v-btn>
                   </template>
@@ -65,13 +65,13 @@
 
           <div v-if="penjualan" class="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-xl">
             <p class="text-sm text-amber-800 mb-1">
-              <strong>Total Penjualan:</strong> Rp {{ formatNumber(penjualan.total) }}
+              <strong>Total Penjualan:</strong> Rp {{ $formatNumber(penjualan.total) }}
             </p>
             <p class="text-sm text-amber-800 mb-1">
-              <strong>Sudah Dibayar (tanpa ini):</strong> Rp {{ formatNumber(penjualanTotal - currentNilaiBayar) }}
+              <strong>Sudah Dibayar (tanpa ini):</strong> Rp {{ $formatNumber(penjualanTotal - currentNilaiBayar) }}
             </p>
             <p class="text-sm text-amber-800">
-              <strong>Sisa Bayar:</strong> Rp {{ formatNumber(penjualan.total - (penjualanTotal - currentNilaiBayar)) }}
+              <strong>Sisa Bayar:</strong> Rp {{ $formatNumber(penjualan.total - (penjualanTotal - currentNilaiBayar)) }}
             </p>
           </div>
 
@@ -136,8 +136,9 @@ watch(() => props.modelValue, (newVal) => {
     penjualanKode.value = props.pembayaran.penjualan.kode_penjualan
     penjualan.value = props.pembayaran.penjualan
     currentNilaiBayar.value = props.pembayaran.nilai_bayar
-    // Calculate total already paid (including this pembayaran)
-    penjualanTotal.value = (penjualan.value.pembayarans || []).reduce((sum, p) => sum + (p.nilai_bayar || 0), 0)
+    
+    // Tinggal panggil dari properti hasil hitung belakang
+    penjualanTotal.value = penjualan.value.pembayarans_sum_nilai_bayar || 0
   }
 })
 
@@ -146,9 +147,9 @@ const dialogModel = computed({
   set: (value) => emit('update:modelValue', value)
 })
 
-const formatNumber = (num) => {
-  return new Intl.NumberFormat('id-ID').format(num || 0)
-}
+// const formatNumber = (num) => {
+//   return new Intl.NumberFormat('id-ID').format(num || 0)
+// }
 
 const submitForm = () => {
   router.put(`/pembayaran/${props.pembayaran.id}`, form.value, {

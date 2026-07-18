@@ -19,4 +19,12 @@ export default defineConfig({
         }),
         vuetify({ autoImport: true }),
     ],
+    optimizeDeps: {
+        include: [
+            '@inertiajs/vue3',
+            'vue',
+            'vuetify',
+            'axios'
+        ],
+    },
 });

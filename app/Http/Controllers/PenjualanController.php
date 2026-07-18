@@ -8,6 +8,7 @@ use App\Models\Penjualan;
 use App\Models\Item;
 use App\Models\PenjualanItem;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PenjualanController extends Controller
@@ -148,7 +149,8 @@ class PenjualanController extends Controller
         $penjualan->update([
             'deleted' => 1,
             'deleted_at' => now(),
-            'deleted_by' => auth()->id()
+            // 'deleted_by' => auth()->id()
+            'deleted_by' => Auth::id() // Menggunakan Facade Auth
         ]);
         return redirect()->route('penjualan.index')->with('success', 'Penjualan berhasil dihapus!');
     }

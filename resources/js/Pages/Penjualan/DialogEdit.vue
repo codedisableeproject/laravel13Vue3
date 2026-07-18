@@ -38,7 +38,7 @@
                     <v-icon size="18" class="mr-3 text-indigo-500" icon="mdi-calendar" />
                     <div class="text-left">
                       <div class="text-[10px] uppercase tracking-wide text-gray-400 leading-none mb-0.5">Tanggal Penjualan</div>
-                      <div class="text-sm font-semibold text-gray-800">{{ form.tanggal_penjualan || 'Pilih Tanggal' }}</div>
+                      <div class="text-sm font-semibold text-gray-800">{{ $formatDate(form.tanggal_penjualan) || 'Pilih Tanggal' }}</div>
                     </div>
                   </v-btn>
                 </template>
@@ -115,7 +115,7 @@
 
                   <v-col cols="12" sm="4" md="2" class="pa-1">
                     <v-text-field
-                      :model-value="formatNumber(item.total_price)"
+                      :model-value="$formatNumber(item.total_price)"
                       label="Total"
                       prefix="Rp"
                       variant="outlined"
@@ -143,7 +143,7 @@
               <div class="mt-4 p-4 bg-white border border-dashed border-gray-200 rounded-xl flex justify-between items-center px-6">
                 <span class="text-sm font-bold text-gray-500 uppercase tracking-wider">Grand Total Penjualan</span>
                 <span class="text-xl font-extrabold text-indigo-600 tabular-nums">
-                  Rp {{ formatNumber(grandTotal) }}
+                  Rp {{ $formatNumber(grandTotal) }}
                 </span>
               </div>
             </div>
@@ -201,7 +201,7 @@ watch(() => props.modelValue, (newVal) => {
 
 // Menghitung Grand Total secara reaktif
 const grandTotal = computed(() => {
-  return form.value.items.reduce((sum, item) => sum + (item.total_price || 0), 0)
+  return form.value.items.reduce((sum, item) => sum + (Number(item.total_price) || 0), 0)
 })
 
 const dialogModel = computed({
@@ -229,12 +229,14 @@ const updateItemPrice = (index) => {
 
 const calculateTotal = (index) => {
   const item = form.value.items[index]
-  item.total_price = (item.qty || 0) * (item.price || 0)
+  const qty = Number(item.qty) || 0
+  const price = Number(item.price) || 0
+  item.total_price = qty * price
 }
 
-const formatNumber = (num) => {
-  return new Intl.NumberFormat('id-ID').format(num || 0)
-}
+// const formatNumber = (num) => {
+//   return new Intl.NumberFormat('id-ID').format(num || 0)
+// }
 
 const submitForm = () => {
   router.put(`/penjualan/${props.penjualan.id}`, form.value, {
