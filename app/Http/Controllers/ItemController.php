@@ -29,7 +29,14 @@ class ItemController extends Controller
             'nama' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:10240',
+        ], [
+            'kode.required' => 'Kode Item wajib diisi',
+            'nama.required' => 'Nama Item wajib diisi',
+            'harga.required' => 'Harga Item wajib diisi',
+            'image.max' => 'Gambar Item maksimal 10MB',
         ]);
+
+
 
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -61,7 +68,14 @@ class ItemController extends Controller
             'nama' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:10240',
+        ], [
+            'kode.required' => 'Kode Item wajib diisi',
+            'nama.required' => 'Nama Item wajib diisi',
+            'harga.required' => 'Harga Item wajib diisi',
+            'image.max' => 'Gambar Item maksimal 10MB',
         ]);
+
+
 
         $imagePath = $item->image;
         if ($request->hasFile('image')) {

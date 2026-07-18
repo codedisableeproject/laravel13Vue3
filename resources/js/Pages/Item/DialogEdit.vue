@@ -32,6 +32,7 @@
                   variant="outlined"
                   density="comfortable"
                   disabled
+                  :error-messages="errors.kode"
                   required
                 />
               </v-col>
@@ -41,6 +42,7 @@
                   label="Nama Item"
                   variant="outlined"
                   density="comfortable"
+                  :error-messages="errors.nama"
                   required
                 />
               </v-col>
@@ -53,6 +55,7 @@
                   density="comfortable"
                   prefix="Rp"
                   min="0"
+                  :error-messages="errors.harga"
                   required
                 />
               </v-col>
@@ -64,6 +67,7 @@
                   show-size
                   variant="outlined"
                   density="comfortable"
+                  :error-messages="errors.image"
                 />
               </v-col>
               <v-col cols="12" md="12">
@@ -113,7 +117,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -121,6 +125,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
+
+const page = usePage()
+const errors = computed(() => page.props.errors)
 
 const form = ref({
   kode: '',
@@ -139,6 +146,7 @@ const isLoading = ref({
 
 watch(() => props.modelValue, (newValue) => {
   if (newValue && props.item) {
+    page.props.errors = {}
     form.value = {
       kode: props.item.kode,
       nama: props.item.nama,
@@ -187,10 +195,13 @@ const submitForm = () => {
   router.post(`/master/item/${props.item.id}`, data, {
     preserveScroll: true,
     onSuccess: () => {
+
+      if(page.props.flash?.errors) return
+      
       emit('update:modelValue', false)
     },
     onError: (errors) => {
-      console.log('Validasi gagal:', errors)
+      
     },
     onFinish: () => {
       isLoading.value.save = false

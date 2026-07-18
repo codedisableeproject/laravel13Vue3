@@ -32,6 +32,7 @@
                   variant="outlined"
                   density="comfortable"
                   disabled
+                  :error-messages="errors.kode"
                   required
                 />
               </v-col>
@@ -41,6 +42,7 @@
                   label="Nama Item"
                   variant="outlined"
                   density="comfortable"
+                  :error-messages="errors.nama"
                   required
                 />
               </v-col>
@@ -53,6 +55,7 @@
                   density="comfortable"
                   prefix="Rp"
                   min="0"
+                  :error-messages="errors.harga"
                   required
                 />
               </v-col>
@@ -64,6 +67,7 @@
                   show-size
                   variant="outlined"
                   density="comfortable"
+                  :error-messages="errors.image"
                   @update:model-value="handleImageChange"
                 />
               </v-col>
@@ -107,7 +111,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -118,6 +122,8 @@ const emit = defineEmits(['update:modelValue'])
 
 const isLoading = ref(false)
 const imagePreview = ref(null)
+const page = usePage()
+const errors = computed(() => page.props.errors)
 
 const form = ref({
   kode: props.kodeItem,
@@ -139,6 +145,8 @@ const handleImageChange = (file) => {
 
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
+    page.props.errors = {}
+
     form.value = {
       kode: props.kodeItem,
       nama: '',
@@ -169,9 +177,14 @@ const submitForm = () => {
   }
   
   router.post('/master/item', data, {
+    onSuccess: () => {
+      if (page.props.flash?.error) return
+      emit('update:modelValue', false)
+    },
+    onError: () => {
+    },
     onFinish: () => {
       isLoading.value = false
-      emit('update:modelValue', false)
     }
   })
 }

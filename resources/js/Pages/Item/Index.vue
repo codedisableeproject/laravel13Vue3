@@ -99,8 +99,9 @@
 </template>
 
 <script setup>
-import { ref, getCurrentInstance } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { ref, getCurrentInstance, watch } from 'vue'
+import { router, usePage } from '@inertiajs/vue3'
+import { useToast } from 'vue-toastification'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import DialogCreate from './DialogCreate.vue'
 import DialogShow from './DialogShow.vue'
@@ -110,6 +111,22 @@ const props = defineProps({
   items: Object,
   kodeItem: String
 })
+
+const toast = useToast()
+const page = usePage()
+
+watch(
+  () => page.props.flash,
+  (newFlash) => {
+    if (newFlash?.success) {
+      toast.success(newFlash.success)
+    }
+    if (newFlash?.error) {
+      toast.error(newFlash.error)
+    }
+  },
+  { deep: true, immediate: true }
+)
 
 const { proxy } = getCurrentInstance()
 const $dialogNotif = proxy.$dialogNotif
