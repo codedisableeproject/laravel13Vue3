@@ -16,7 +16,7 @@ class PembayaranController extends Controller
     {
         return function ($attribute, $value, $fail) use ($sisaBayar) {
             if ($sisaBayar === null) {
-                return; // biar rule exists:penjualans,id yang nangkep kalau penjualan_id invalid
+                return; 
             }
             if ($value < $sisaBayar) {
                 $kurang = $sisaBayar - $value;
@@ -35,7 +35,7 @@ class PembayaranController extends Controller
             $q->where('deleted', 0)
             ->withSum(['pembayarans' => function($qq) {
                 $qq->where('deleted', 0);
-            }], 'nilai_bayar'); // <--- Hitung dari belakang lewat SQL
+            }], 'nilai_bayar'); // Hitung dari belakang lewat SQL
         }])->where('deleted', 0)->orderBy('created_at', 'desc');
 
         if ($request->tanggal_mulai && $request->tanggal_selesai) {
@@ -47,7 +47,7 @@ class PembayaranController extends Controller
         // Ambil data untuk dropdown di DialogCreate
         $penjualans = Penjualan::withSum(['pembayarans' => function($q) {
             $q->where('deleted', 0);
-        }], 'nilai_bayar') // <--- Hitung dari belakang lewat SQL
+        }], 'nilai_bayar') // Hitung dari belakang lewat SQL
         ->with(['items.item'])
         ->where('deleted', 0)
         ->where('status', '!=', 'Sudah Dibayar')

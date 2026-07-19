@@ -294,7 +294,7 @@ const deletePenjualan = async (id) => {
 
 const openShowDialog = (penjualan) => {
   selectedPenjualan.value = penjualan
-  // Calculate totalSudahDibayar from related pembayarans
+  // Hitung total dari pembayarans
   selectedPenjualanTotal.value = (penjualan.pembayarans || []).reduce((sum, p) => sum + (p.nilai_bayar || 0), 0)
   showDialogOpen.value = true
 }

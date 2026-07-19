@@ -20,7 +20,6 @@
 
       <v-card-text class="p-6">
         <v-form @submit.prevent="submitForm">
-          <!-- 1. INFORMASI UTAMA TRANSAKSI -->
           <div class="border border-gray-100 p-5 rounded-xl mb-6 bg-gray-50/30">
             <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
               <v-icon color="indigo" size="20" icon="mdi-information-outline" />
@@ -55,7 +54,6 @@
             </v-row>
           </div>
 
-          <!-- 2. DAFTAR ITEMS -->
           <div class="border border-gray-100 rounded-xl overflow-hidden mb-6">
             <div class="p-5 flex justify-between items-center border-b border-gray-100 bg-slate-50/50">
               <div>
@@ -72,19 +70,16 @@
             </div>
 
             <div class="p-5 bg-slate-50/30">
-              <!-- Looping Baris Item dengan Desain Card Box yang Bersih -->
               <div 
                 v-for="(item, index) in form.items" 
                 :key="index" 
                 class="bg-white border border-gray-100 rounded-xl p-4 mb-3 shadow-sm transition-all hover:border-indigo-100 relative group"
               >
-                <!-- Label Penanda Urutan Baris Item -->
                 <div class="absolute -left-2 top-4 bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono">
                   #{{ index + 1 }}
                 </div>
 
                 <v-row align="center" class="ma-0">
-                  <!-- Pilihan Barang -->
                   <v-col cols="12" md="4" class="pa-1">
                     <v-select
                       v-model="item.item_id"
@@ -100,7 +95,6 @@
                     />
                   </v-col>
 
-                  <!-- Kuantitas -->
                   <v-col cols="12" sm="4" md="2" class="pa-1">
                     <v-text-field
                       v-model.number="item.qty"
@@ -116,7 +110,6 @@
                     />
                   </v-col>
 
-                  <!-- Harga Satuan -->
                   <v-col cols="12" sm="4" md="3" class="pa-1">
                     <v-text-field
                       :model-value="formatNumber(item.price)"
@@ -130,7 +123,6 @@
                     />
                   </v-col>
 
-                  <!-- Total Harga per Baris -->
                   <v-col cols="12" sm="4" md="2" class="pa-1">
                     <v-text-field
                       :model-value="formatNumber(item.total_price)"
@@ -144,7 +136,6 @@
                     />
                   </v-col>
 
-                  <!-- Tombol Hapus Baris -->
                   <v-col cols="12" md="1" class="pa-1 flex justify-end">
                     <v-btn 
                       type="button" 
@@ -159,7 +150,6 @@
                 </v-row>
               </div>
               
-              <!-- Ringkasan Grand Total di Bagian Bawah -->
               <div class="mt-4 p-4 bg-white border border-dashed border-gray-200 rounded-xl flex justify-between items-center px-6">
                 <span class="text-sm font-bold text-gray-500 uppercase tracking-wider">Grand Total Penjualan</span>
                 <span class="text-xl font-extrabold text-indigo-600 tabular-nums">
@@ -169,7 +159,6 @@
             </div>
           </div>
 
-          <!-- 3. ACTION FOOTER -->
           <div class="flex justify-end gap-3 items-center">
             <v-btn variant="text" class="!text-gray-500 rounded-xl px-5" height="44" @click="$emit('update:modelValue', false)">
               Batal

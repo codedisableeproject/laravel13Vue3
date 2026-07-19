@@ -147,7 +147,7 @@ watch(() => props.modelValue, (newVal) => {
     penjualan.value = props.pembayaran.penjualan
     currentNilaiBayar.value = props.pembayaran.nilai_bayar
     
-    // Tinggal panggil dari properti hasil hitung belakang
+    // hasil hitung belakang
     penjualanTotal.value = penjualan.value.pembayarans_sum_nilai_bayar || 0
   }
 })
@@ -165,8 +165,6 @@ const submitForm = () => {
   isSubmitting.value = true
   router.put(`/pembayaran/${props.pembayaran.id}`, form.value, {
     onSuccess: () => {
-      // Sama seperti create, jika dilempar flash error dari session Laravel,
-      // jangan tutup dialog agar user dapat membaca pesan toast/balon errornya.
       if (page.props.flash?.error) {
         return
       }

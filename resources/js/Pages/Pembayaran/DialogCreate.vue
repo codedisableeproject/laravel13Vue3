@@ -70,7 +70,6 @@
             />
           </div>
 
-          <!-- Tampilan Detail Barang di DialogCreate.vue -->
           <div v-if="selectedPenjualan && (selectedPenjualan.items && selectedPenjualan.items.length > 0)" class="mb-6 border border-gray-200 rounded-xl overflow-hidden">
             <div class="bg-gray-100 px-4 py-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
               Rincian Item yang Dibeli
@@ -78,7 +77,6 @@
             <div class="divide-y divide-gray-100 max-h-[200px] overflow-y-auto">
               <div v-for="item in selectedPenjualan.items" :key="item.id" class="p-3 flex justify-between items-center bg-white">
                 <div>
-                  <!-- Mengambil nama produk dari relasi item -->
                   <p class="text-sm font-semibold text-gray-800">{{ item.item?.nama || 'Produk Tanpa Nama' }}</p>
                   <p class="text-xs text-gray-500">
                     Rp {{ $formatNumber(item.price) }} × {{ item.qty }}
@@ -179,7 +177,6 @@ const updateSelectedPenjualan = () => {
   if (form.value.penjualan_id) {
     selectedPenjualan.value = props.penjualans.find(p => p.id === form.value.penjualan_id)
     
-    // Tinggal panggil properti ini, otomatis realtime saat select diganti
     selectedPenjualanTotal.value = selectedPenjualan.value.pembayarans_sum_nilai_bayar || 0
   } else {
     selectedPenjualan.value = null

@@ -132,10 +132,9 @@ const form = ref({
   image: null
 })
 
-// Fungsi untuk membuat objek URL lokal dari file gambar yang diunggah
 const handleImageChange = (file) => {
   if (file) {
-    // Jika bentuknya array (tergantung konfigurasi vuetify), ambil indeks pertama
+    // ambil indeks pertama
     const targetFile = Array.isArray(file) ? file[0] : file
     imagePreview.value = URL.createObjectURL(targetFile)
   } else {
@@ -171,7 +170,7 @@ const submitForm = () => {
   data.append('harga', form.value.harga)
   
   if (form.value.image) {
-    // Vuetify file input mengembalikan File object atau Array of File
+    // file input mengembalikan File object atau Array of File
     const fileToSend = Array.isArray(form.value.image) ? form.value.image[0] : form.value.image
     data.append('image', fileToSend)
   }
