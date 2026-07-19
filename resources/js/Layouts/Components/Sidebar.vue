@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer v-model="drawer" class="bg-indigo-darken-4 text-white" elevation="2">
+  <v-navigation-drawer v-model="drawer" class="text-white" style="background: var(--primary-dark-4);"elevation="2">
     
     <v-list class="pa-4 text-center">
       <v-avatar size="64" class="mb-2 bg-white text-indigo-darken-4 font-weight-bold">

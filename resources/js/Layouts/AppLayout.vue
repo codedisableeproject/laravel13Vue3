@@ -7,7 +7,7 @@
       <v-app-bar-nav-icon @click="drawer = !drawer" class="text-indigo-darken-4"></v-app-bar-nav-icon>
       
       <v-app-bar-title class="font-weight-bold text-indigo-darken-4">
-        Sistem Informasi Internal
+        Pencatatan Penjualan
       </v-app-bar-title>
 
       <v-spacer></v-spacer>

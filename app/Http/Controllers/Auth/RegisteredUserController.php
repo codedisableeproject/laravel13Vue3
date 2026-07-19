@@ -23,11 +23,21 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'name.required' => 'Nama wajib diisi',
+            'email.required' => 'Email wajib diisi',
+            'password.required' => 'Password wajib diisi',
+            'password.confirmed' => 'Password dan konfirmasi password tidak cocok',
+        ]);
+
+        $request->merge([
+            'role_id' => 2,
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'role_id' => 2,
             'password' => Hash::make($request->password),
         ]);
 
@@ -35,6 +45,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard')->with('success', 'Registrasi berhasil! Selamat datang.');
     }
 }

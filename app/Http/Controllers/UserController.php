@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
     public function index()
     {
         $users = User::where('deleted', 0)->paginate(10);
-        return Inertia::render('User/Index', compact('users'));
+        $roles = Role::where('deleted', 0)->get();
+        return Inertia::render('User/Index', compact('users', 'roles'));
     }
 
     public function create()
@@ -26,13 +29,19 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
+            'role_id' => 'required|integer|exists:roles,id,deleted,0,deleted_at,NULL',
+        ], [
+            'name.required' => 'Nama wajib diisi',
+            'email.required' => 'Email wajib diisi',
+            'password.min' => 'Password wajib minimal 6 karakter',
+            'role_id.required' => 'Pilih Role',
         ]);
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => 2,
+            'role_id' => $request->role_id,
             'deleted' => 0
         ]);
 
@@ -52,6 +61,10 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
             'password' => 'nullable|string|min:6',
+        ], [
+            'name.required' => 'Nama wajib diisi',
+            'email.required' => 'Email wajib diisi',
+            'password.min' => 'Password wajib minimal 6 karakter',
         ]);
 
         $data = [

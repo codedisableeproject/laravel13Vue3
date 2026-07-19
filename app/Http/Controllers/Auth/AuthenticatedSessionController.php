@@ -26,7 +26,7 @@ class AuthenticatedSessionController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('dashboard'));
+            return redirect()->intended(route('dashboard'))->with('success', 'Anda telah masuk.');
         }
 
         return back()->withErrors([
@@ -42,6 +42,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('login')->with('success', 'Anda telah keluar dari akun.');
     }
 }

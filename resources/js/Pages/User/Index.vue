@@ -70,23 +70,53 @@
       </div>
     </div>
 
-    <DialogCreate v-model="createDialogOpen" />
-    <DialogShow v-model="showDialogOpen" :user="selectedUser" />
-    <DialogEdit v-model="editDialogOpen" :user="selectedUser" />
+    <DialogCreate
+     v-model="createDialogOpen" 
+     :roles="roles" 
+     />
+    <DialogShow
+     v-model="showDialogOpen" 
+     :user="selectedUser" 
+     :roles="roles" />
+    <DialogEdit
+     v-model="editDialogOpen" 
+     :user="selectedUser" 
+     :roles="roles" />
   </AppLayout>
 </template>
 
 <script setup>
-import { ref, getCurrentInstance } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { ref, getCurrentInstance, watch } from 'vue'
+import { router, usePage } from '@inertiajs/vue3'
+import { useToast } from 'vue-toastification'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import DialogCreate from './DialogCreate.vue'
 import DialogShow from './DialogShow.vue'
 import DialogEdit from './DialogEdit.vue'
 
 const props = defineProps({
-  users: Object
+  users: Object,
+  roles: {
+    type: Array,
+    default: () => []
+  }
 })
+
+const toast = useToast()
+const page = usePage()
+
+watch(
+  () => page.props.flash,
+  (newFlash) => {
+    if (newFlash?.success) {
+      toast.success(newFlash.success)
+    }
+    if (newFlash?.error) {
+      toast.error(newFlash.error)
+    }
+  },
+  { deep: true, immediate: true }
+)
 
 const { proxy } = getCurrentInstance()
 const $dialogNotif = proxy.$dialogNotif

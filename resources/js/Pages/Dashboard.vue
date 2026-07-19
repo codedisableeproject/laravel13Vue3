@@ -144,7 +144,8 @@
 
 <script setup>
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
+import { useToast } from 'vue-toastification'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import { Bar, Doughnut } from 'vue-chartjs'
 import {
@@ -165,6 +166,22 @@ const props = defineProps({
   charts: Object,
   filters: Object
 })
+
+const page = usePage()
+const toast = useToast()
+
+watch(
+  () => page.props.flash,
+  (newFlash) => {
+    if (newFlash?.success) {
+      toast.success(newFlash.success)
+    }
+    if (newFlash?.error) {
+      toast.error(newFlash.error)
+    }
+  },
+  { deep: true, immediate: true }
+)
 
 const startMenu = ref(false)
 const endMenu = ref(false)

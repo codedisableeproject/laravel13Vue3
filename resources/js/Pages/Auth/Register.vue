@@ -95,14 +95,29 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { router, useForm, usePage } from '@inertiajs/vue3'
+import { useToast } from 'vue-toastification'
 import GuestLayout from '@/Layouts/GuestLayout.vue'
 
 const page = usePage()
+const toast = useToast()
 const formRef = ref(null)
 const showPassword = ref(false)
 const processing = ref(false)
+
+watch(
+  () => page.props.flash,
+  (newFlash) => {
+    if (newFlash?.success) {
+      toast.success(newFlash.success)
+    }
+    if (newFlash?.error) {
+      toast.error(newFlash.error)
+    }
+  },
+  { deep: true, immediate: true }
+)
 
 const form = useForm({
   name: '',
@@ -115,6 +130,17 @@ const errors = computed(() => page.props.errors || {})
 
 const submit = () => {
   processing.value = true
-  form.post('/register', { onFinish: () => (processing.value = false) })
+  form.post('/register', { 
+    onSuccess: () => {
+      if (page.props.flash?.error) return
+      emit('update:modelValue', false)
+    },
+    onError: () => {
+      // tambahan pesan atau validasi error dari server jika ada
+    },
+    onFinish: () => {
+      processing.value = false
+    }
+  })
 }
 </script>

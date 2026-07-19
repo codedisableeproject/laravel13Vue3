@@ -6,7 +6,7 @@
           <div class="auth-logo-badge">
             <v-icon size="28" icon="mdi-store" color="white" />
           </div>
-          <h1 class="auth-title">Sistem Informasi Internal</h1>
+          <h1 class="auth-title">Pencatatan Penjualan</h1>
           <p class="auth-subtitle">Masuk ke akun Anda untuk melanjutkan</p>
         </div>
 

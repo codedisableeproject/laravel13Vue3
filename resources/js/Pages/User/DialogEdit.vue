@@ -31,6 +31,7 @@
                   label="Nama"
                   variant="outlined"
                   density="comfortable"
+                  :error-messages="errors.name"
                   required
                 />
               </v-col>
@@ -41,6 +42,20 @@
                   type="email"
                   variant="outlined"
                   density="comfortable"
+                  :error-messages="errors.email"
+                  required
+                />
+              </v-col>
+              <v-col cols="12" md="6" class="py-1">
+                <v-select
+                  v-model="form.role_id"
+                  :items="roles"
+                  item-title="name"
+                  item-value="id"
+                  label="Pilih Role"
+                  variant="outlined"
+                  density="comfortable"
+                  :error-messages="errors.role_id"
                   required
                 />
               </v-col>
@@ -51,6 +66,7 @@
                   type="password"
                   variant="outlined"
                   density="comfortable"
+                  :error-messages="errors.password"
                 />
               </v-col>
             </v-row>
@@ -60,7 +76,7 @@
             <v-btn variant="text" class="!text-gray-500 rounded-xl px-5" height="44" @click="$emit('update:modelValue', false)">
               Batal
             </v-btn>
-            <v-btn type="submit" class="apply-btn min-w-[140px]">
+            <v-btn type="submit" class="apply-btn min-w-[140px]" :loading="isSubmitting" :disabled="isSubmitting">
               <v-icon left size="18" class="mr-1" icon="mdi-content-save-outline" />
               Simpan Perubahan
             </v-btn>
@@ -73,27 +89,35 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 
 const props = defineProps({
   modelValue: Boolean,
-  user: Object
+  user: Object,
+  roles: Array
 })
 
 const emit = defineEmits(['update:modelValue'])
 
+const page = usePage()
+const errors = computed(() => page.props.errors)
+
+const isSubmitting = ref(false)
 const form = ref({
   name: '',
   email: '',
+  role_id: null,
   password: ''
 })
 
 // Reset form ketika dialog dibuka
 watch(() => props.modelValue, (newValue) => {
   if (newValue && props.user) {
+    page.props.errors = {}
     form.value = {
       name: props.user.name,
       email: props.user.email,
+      role_id: props.user.role_id,
       password: ''
     }
   }
@@ -105,9 +129,19 @@ const dialogModel = computed({
 })
 
 const submitForm = () => {
+  isSubmitting.value = true
   router.put(`/master/user/${props.user.id}`, form.value, {
-    onFinish: () => {
+    onSuccess: () => {
+
+      if (page.props.flash?.error) return
+
       emit('update:modelValue', false)
+    },
+    onError: () => {
+      // tambahan pesan atau validasi error dari server jika ada
+    },
+    onFinish: () => {
+      isSubmitting.value = false
     }
   })
 }

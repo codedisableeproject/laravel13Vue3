@@ -203,7 +203,7 @@ const submitForm = () => {
       emit('update:modelValue', false)
     },
     onError: () => {
-      // ini buat validation error (422) — dialog tetap kebuka otomatis
+      // tambahan pesan atau validasi error dari server jika ada
     },
     onFinish: () => {
       isSubmitting.value = false
