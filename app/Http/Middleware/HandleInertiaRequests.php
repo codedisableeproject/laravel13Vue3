@@ -39,56 +39,53 @@ class HandleInertiaRequests extends Middleware
         //     ...parent::share($request),
         //     //
         // ];
+        $user = $request->user();
+        $menus = [
+            [
+                'title' => 'Dashboard',
+                'url'   => '/',
+                'icon'  => 'mdi-view-dashboard',
+            ],
+            [
+                'title' => 'Penjualan',
+                'url'   => '/penjualan',
+                'icon'  => 'mdi-cash-register',
+            ],
+            [
+                'title' => 'Pembayaran',
+                'url'   => '/pembayaran',
+                'icon'  => 'mdi-credit-card',
+            ],
+        ];
+
+        if ($user && $user->role_id === 1) { 
+            $menus[] = [
+                'title' => 'Master',
+                'icon'  => 'mdi-folder-multiple',
+                'children' => [
+                    [
+                        'title' => 'User',
+                        'url'   => '/master/user',
+                        'icon'  => 'mdi-account-group',
+                    ],
+                    [
+                        'title' => 'Item',
+                        'url'   => '/master/item',
+                        'icon'  => 'mdi-package-variant',
+                    ],
+                ],
+            ];
+        }
         return array_merge(parent::share($request), [
-            // Data otentikasi (bawaan)
             'auth' => [
-                'user' => $request->user(),
-                // 'user' => [
-                //     'name'  => 'Budi Santoso',
-                //     'email' => 'budi.santoso@gmail.com',
-                // ],
+                'user' => $user, 
             ],
+            'menus' => $menus,
             
-            // INI YANG KITA TAMBAHKAN: Data Menu Dinamis
-            'menus' => [
-                [
-                    'title' => 'Dashboard',
-                    'url'   => '/',
-                    'icon'  => 'mdi-view-dashboard',
-                ],
-                [
-                    'title' => 'Penjualan',
-                    'url'   => '/penjualan',
-                    'icon'  => 'mdi-cash-register',
-                ],
-                [
-                    'title' => 'Pembayaran',
-                    'url'   => '/pembayaran',
-                    'icon'  => 'mdi-credit-card',
-                ],
-                [
-                    'title' => 'Master',
-                    'icon'  => 'mdi-folder-multiple',
-                    'children' => [
-                        [
-                            'title' => 'User',
-                            'url'   => '/master/user',
-                            'icon'  => 'mdi-account-group',
-                        ],
-                        [
-                            'title' => 'Item',
-                            'url'   => '/master/item',
-                            'icon'  => 'mdi-package-variant',
-                        ]
-                    ]
-                ]
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error'   => fn () => $request->session()->get('error'),
             ],
-        // sFlash message (buat notif sukses/error)
-        'flash' => [
-            'success' => fn () => $request->session()->get('success'),
-            'error'   => fn () => $request->session()->get('error'),
-        ],
         ]);
-        
     }
 }
